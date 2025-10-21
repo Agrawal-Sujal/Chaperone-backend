@@ -1,9 +1,8 @@
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 
-# ----------------------------
 # Custom User Model
-# ----------------------------
+
 class UserManager(BaseUserManager):
     def create_user(self, email, name, password=None, **extra_fields):
         if not email:
@@ -52,9 +51,8 @@ class User(AbstractBaseUser, PermissionsMixin):
         return self.email
 
 
-# ----------------------------
 # Walker & Wanderer
-# ----------------------------
+
 class Walker(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
     photo_url = models.TextField(blank=True, null=True)
@@ -71,9 +69,8 @@ class Wanderer(models.Model):
         return f"Wanderer: {self.user.email}"
 
 
-# ----------------------------
 # Preferences
-# ----------------------------
+
 class WandererPreferences(models.Model):
     wanderer = models.OneToOneField(Wanderer, on_delete=models.CASCADE, primary_key=True)
     need_mobility_assistance = models.BooleanField(default=False)
@@ -82,9 +79,8 @@ class WandererPreferences(models.Model):
         return f"Preferences for {self.wanderer.user.email}"
 
 
-# ----------------------------
 # Support Tables
-# ----------------------------
+
 class Charity(models.Model):
     name = models.TextField()
 
@@ -107,9 +103,8 @@ class WalkingPace(models.Model):
         return self.name
 
 
-# ----------------------------
 # Many-to-Many Relationships
-# ----------------------------
+
 class WalkerLanguage(models.Model):
     walker = models.ForeignKey(Walker, on_delete=models.CASCADE)
     language = models.ForeignKey(Language, on_delete=models.CASCADE)

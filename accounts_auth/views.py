@@ -12,34 +12,54 @@ from .serializers import RegisterSerializer, LoginSerializer, UserSerializer
 @api_view(['POST'])
 @permission_classes([permissions.AllowAny])
 def register_view(request):
-    serializer = RegisterSerializer(data=request.data)
-    if serializer.is_valid():
-        user = serializer.save()
-        token, _ = Token.objects.get_or_create(user=user)
-        return Response(
-            {'token': token.key, 'user': serializer.data},
-            status=status.HTTP_201_CREATED
-        )
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    try:
+        email = request.data.get("email")
+        password = request.data.get("password")
+
+        user,created = User.objects.get_or_create(email = email, password_hash = password)
+
+        if created:
+            return Response({'error':'This email is already registered.'}, status= status.HTTP_409_CONFLICT)
+        
+        token,_ = Token.objects.get_or_create(user = user)
+        return Response({
+            'token':token.key,
+            'id': user.id
+        },status = status.HTTP_201_CREATED)
+    except Exception as e:
+        return Response({ "error": str(e)}, status= status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
 
 
 @api_view(['POST'])
 @permission_classes([permissions.AllowAny])
 def login_view(request):
-    serializer = LoginSerializer(data=request.data)
-    if serializer.is_valid():
-        return Response(serializer.validated_data, status=status.HTTP_200_OK)
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    try:
+        email = request.data.get("email")
+        password = request.data.get("password")
+
+        user = User.objects.get(email = email, password_hash = password)
+
+        if user is None:
+            return Response({'error':'Email does not exist or invalid credentials'}, status= status.HTTP_404_NOT_FOUND)
+        
+        token,_ = Token.objects.get_or_create(user = user)
+        return Response({
+            'token':token.key,
+            'id': user.id
+        },status = status.HTTP_200_OK)
+   
+    except Exception as e:
+        return Response({ "error": str(e)}, status= status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 @api_view(['POST'])
 @permission_classes([permissions.AllowAny])
 def google_auth_view(request):
-    credential = request.data.get('id_token')
-    if not credential:
-        return Response({"error": "Missing Google credential"}, status=status.HTTP_400_BAD_REQUEST)
 
     try:
+        credential = request.data.get('id_token')
+        
         payload = id_token.verify_oauth2_token(
             credential,
             requests.Request(),
@@ -61,9 +81,12 @@ def google_auth_view(request):
 
         return Response({
             "token": token.key,
-            "user": UserSerializer(user).data,
-            "is_new_user": created
+            "id": user.id
         }, status=status.HTTP_200_OK)
 
     except ValueError:
         return Response({"error": "Invalid Google token"}, status=status.HTTP_400_BAD_REQUEST)
+    
+    except Exception as e:
+        return Response({ "error": str(e)}, status= status.HTTP_500_INTERNAL_SERVER_ERROR)
+
