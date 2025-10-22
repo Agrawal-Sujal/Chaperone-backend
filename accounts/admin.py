@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.utils.translation import gettext_lazy as _
-from .models import User
+from .models import *
 
 class UserAdmin(BaseUserAdmin):
     model = User
@@ -11,4 +11,10 @@ class UserAdmin(BaseUserAdmin):
     ordering = ('email',)
 
 
+admin.site.register(Walker)
+admin.site.register(Wanderer)
+admin.site.register(WandererPreferences)
+admin.site.register(Language)
+admin.site.register(WalkingPace)
+admin.site.register(Charity)
 admin.site.register(User, UserAdmin)

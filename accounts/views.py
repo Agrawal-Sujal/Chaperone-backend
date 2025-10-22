@@ -88,7 +88,7 @@ def update_wanderer_preferences(request):
         charity_ids = request.data.get("charity_ids", [])
 
         preferences, created = WandererPreferences.objects.get_or_create(
-            wanderer = user, ## can give error
+            wanderer = wanderer, 
             defaults = {"need_mobility_assistance": need_mobility_assistance}
         )
 

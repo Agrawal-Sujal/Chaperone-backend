@@ -18,7 +18,7 @@ def register_view(request):
 
         user,created = User.objects.get_or_create(email = email, password_hash = password)
 
-        if created:
+        if not created:
             return Response({'error':'This email is already registered.'}, status= status.HTTP_409_CONFLICT)
         
         token,_ = Token.objects.get_or_create(user = user)
@@ -59,7 +59,7 @@ def google_auth_view(request):
 
     try:
         credential = request.data.get('id_token')
-        
+
         payload = id_token.verify_oauth2_token(
             credential,
             requests.Request(),
