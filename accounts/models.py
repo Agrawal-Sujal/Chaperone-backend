@@ -55,8 +55,10 @@ class User(AbstractBaseUser, PermissionsMixin):
 
 class Walker(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
+    name = models.CharField(max_length = 100,null = True,blank = True)
     photo_url = models.TextField(blank=True, null=True)
     about_yourself = models.TextField(blank=True, null=True)
+    rating = models.IntegerField(null=True, blank=True, default=None)
 
     def __str__(self):
         return f"Walker: {self.user.email}"
@@ -64,6 +66,8 @@ class Walker(models.Model):
 
 class Wanderer(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
+    name = models.CharField(max_length = 100, null = True, blank = True)
+    rating = models.IntegerField(null=True, blank=True, default=None)
 
     def __str__(self):
         return f"Wanderer: {self.user.email}"

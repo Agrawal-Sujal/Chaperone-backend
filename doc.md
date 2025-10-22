@@ -332,3 +332,240 @@ Update preferences for a Wanderer — mobility assistance, languages, charities,
 ```
 
 ---
+
+
+
+
+
+
+* * *
+
+**Feedback API Documentation**
+=================================
+
+Base URL (example):
+
+```
+https://yourdomain.com/api/feedback/
+```
+
+All endpoints require **Token Authentication** (add `Authorization: Token <your_token>` in headers).
+* * *
+
+Common Error Response format
+-----------------------------------------
+
+**Error (403 Forbidden):**
+
+```json
+{ "error": "You are not allowed to perform this action." }
+```
+
+**Error (500 Server Error):**
+
+```json
+{ "error": ["Something went wrong. Please try again later"] }
+```
+
+**Error (401 Unauthorized0):**
+
+```json
+{ "detail": "Authentication credentials were not provided." }
+```
+
+**Error (400 Bad Request):**
+
+```json
+{ "detail": "Some fields are missing" }
+```
+
+**Error (404 Bad Request):**
+
+```json
+{ "detail": "Not found" }
+```
+**Error (409 Conflict):**
+
+```json
+{ "detail": "This email is already registered" }
+```
+
+
+* * *
+
+Walker Feedback (Given by Wanderer)
+-----------------------------------------
+
+### 🔹 **1\. Add Walker Feedback**
+
+**Endpoint:**
+
+```
+POST /api/feedback/walker/add/
+```
+
+**Auth Required:** ✅ Yes (`IsAuthenticated`, `IsWanderer`)
+
+**Body (JSON):**
+
+```json
+{
+  "walker_id": 3,
+  "rating": 5,
+  "feedback": "Very friendly and punctual!"
+}
+```
+
+**Response (201 CREATED):**
+
+```json
+{
+  "message": "Feedback submitted successfully"
+}
+```
+
+* * *
+
+### 🔹 **2\. Delete Walker Feedback**
+
+**Endpoint:**
+
+```
+DELETE /api/feedback/walker/{feedback_id}/
+```
+
+**Auth Required:** ✅ Yes (`IsAuthenticated`, `IsWanderer`)
+
+**Path Parameter:**
+
+*   `feedback_id` → ID of the feedback to delete
+
+**Response (200 OK):**
+
+```json
+{
+  "message": "Feedback deleted successfully"
+}
+```
+
+* * *
+
+### 🔹 **3\. Get All Feedback for a Walker**
+
+**Endpoint:**
+
+```
+GET /api/feedback/walker/{walker_id}/
+```
+
+**Auth Required:** ✅ Yes (`IsAuthenticated`)
+
+**Response (200 OK):**
+
+```json
+[
+  {
+    "id": 1,
+    "wanderer_name": "John Doe",
+    "rating": 5,
+    "feedback": "Great experience!"
+  },
+  {
+    "id": 2,
+    "wanderer_name": "Jane Smith",
+    "rating": 4,
+    "feedback": "Good communication."
+  }
+]
+```
+
+
+* * *
+
+Wanderer Feedback (Given by Walker)
+-----------------------------------------
+
+### 🔹 **4\. Add Wanderer Feedback**
+
+**Endpoint:**
+
+```
+POST /api/feedback/wanderer/add/
+```
+
+**Auth Required:** ✅ Yes (`IsAuthenticated`, `IsWalker`)
+
+**Body (JSON):**
+
+```json
+{
+  "wanderer_id": 7,
+  "rating": 4
+}
+```
+
+**Response (201 CREATED):**
+
+```json
+{
+  "message": "Feedback submitted successfully"
+}
+```
+
+
+* * *
+
+### 🔹 **5\. Delete Wanderer Feedback**
+
+**Endpoint:**
+
+```
+DELETE /api/feedback/wanderer/{feedback_id}/
+```
+
+**Auth Required:** ✅ Yes (`IsAuthenticated`, `IsWalker`)
+
+**Path Parameter:**
+
+*   `feedback_id` → ID of the feedback to delete
+
+**Response (200 OK):**
+
+```json
+{
+  "message": "Feedback deleted successfully"
+}
+```
+
+
+* * *
+
+### 🔹 **6\. Get All Feedback for a Wanderer**
+
+**Endpoint:**
+
+```
+GET /api/feedback/wanderer/{wanderer_id}/
+```
+
+**Auth Required:** ✅ Yes (`IsAuthenticated`)
+
+**Response (200 OK):**
+
+```json
+[
+  {
+    "id": 1,
+    "walker_name": "John Doe",
+    "rating": 5
+  },
+  {
+    "id": 2,
+    "walker_name": "Jane Smith",
+    "rating": 3
+  }
+]
+```
+
+
+* * *

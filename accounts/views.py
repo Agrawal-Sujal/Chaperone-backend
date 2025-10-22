@@ -48,12 +48,12 @@ def update_user_role(request):
         if is_walker:
             Wanderer.objects.filter(user=user).delete()
 
-            walker, created = Walker.objects.get_or_create(user=user)
+            walker, created = Walker.objects.get_or_create(user=user,name = user.name)
             message = "User promoted to Walker." if created else "User role updated to Walker."
         else:
             Walker.objects.filter(user=user).delete()
 
-            wanderer, created = Wanderer.objects.get_or_create(user=user)
+            wanderer, created = Wanderer.objects.get_or_create(user=user,name = user.name)
             message = "User promoted to Wanderer." if created else "User role updated to Wanderer."
 
         return Response({
