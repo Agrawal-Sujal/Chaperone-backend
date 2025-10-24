@@ -26,14 +26,35 @@ def add_walker_feedback(request):
         walker = Walker.objects.get(user=walker_id)
     except Walker.DoesNotExist:
         return Response({"error": "Walker not found"}, status=status.HTTP_404_NOT_FOUND)
+    
+    old_rating = 0
+    repeated_user_feedback = WalkerFeedback.objects.filter(
+    walker=walker, wanderer=wanderer
+    ).first()
+    new_feedback = False
+    if repeated_user_feedback:
+        old_rating = repeated_user_feedback.rating
+        repeated_user_feedback.rating = rating 
+        repeated_user_feedback.feedback = feedback
+        repeated_user_feedback.save()
+    else :
+        new_feedback = True
+        wf = WalkerFeedback.objects.create(
+            walker=walker,
+            wanderer=wanderer,
+            wanderer_name=wanderer.user.name,
+            rating=rating,
+            feedback=feedback
+        )
 
-    wf = WalkerFeedback.objects.create(
-        walker=walker,
-        wanderer=wanderer,
-        wanderer_name=wanderer.user.name,
-        rating=rating,
-        feedback=feedback
-    )
+    new_total_rating = walker.total_rating - old_rating + rating
+    new_total_wanderer = walker.total_wanderer
+    if new_feedback:
+        new_total_wanderer = new_total_wanderer + 1
+    
+    walker.total_rating = new_total_rating
+    walker.total_wanderer = new_total_wanderer
+    walker.save()
 
     return Response({
         "message": "Feedback submitted successfully"
@@ -97,13 +118,31 @@ def add_wanderer_feedback(request):
     except Wanderer.DoesNotExist:
         return Response({"error": "Wanderer not found"}, status=status.HTTP_404_NOT_FOUND)
 
-    wf = WandererFeedback.objects.create(
-        walker=walker,
-        wanderer=wanderer,
-        walker_name=walker.user.name,
-        rating=rating
-    )
+    old_rating = 0
+    repeated_user_feedback = WandererFeedback.objects.filter(walker = walker, wanderer = wanderer).first()
+    new_feedback = False
 
+    if repeated_user_feedback:
+        old_rating = repeated_user_feedback.rating
+        repeated_user_feedback.rating = rating 
+        repeated_user_feedback.save()
+    else :
+        new_feedback = True
+        wf = WandererFeedback.objects.create(
+            walker=walker,
+            wanderer=wanderer,
+            walker_name=walker.user.name,
+            rating=rating
+        )
+
+    new_total_rating = wanderer.total_rating - old_rating + rating
+    new_total_walker = wanderer.total_walker
+    if new_feedback:
+        new_total_walker = new_total_walker + 1
+    
+    wanderer.total_rating = new_total_rating
+    wanderer.total_walker = new_total_walker
+    wanderer.save()
     return Response({
         "message": "Feedback submitted successfully"
     }, status=status.HTTP_201_CREATED)
