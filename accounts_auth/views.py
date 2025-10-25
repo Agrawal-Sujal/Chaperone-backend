@@ -27,7 +27,7 @@ def register_view(request):
             'id': user.id
         },status = status.HTTP_201_CREATED)
     except Exception as e:
-        return Response({ "error": str(e)}, status= status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return Response({ "detail": str(e)}, status= status.HTTP_500_INTERNAL_SERVER_detail)
     
 
 
@@ -41,7 +41,7 @@ def login_view(request):
         user = User.objects.get(email = email, password_hash = password)
 
         if user is None:
-            return Response({'error':'Email does not exist or invalid credentials'}, status= status.HTTP_404_NOT_FOUND)
+            return Response({'detail':'Email does not exist or invalid credentials'}, status= status.HTTP_404_NOT_FOUND)
         
         token,_ = Token.objects.get_or_create(user = user)
         return Response({
@@ -50,7 +50,7 @@ def login_view(request):
         },status = status.HTTP_200_OK)
    
     except Exception as e:
-        return Response({ "error": str(e)}, status= status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return Response({ "detail": str(e)}, status= status.HTTP_500_INTERNAL_SERVER_detail)
 
 
 @api_view(['POST'])
@@ -70,7 +70,7 @@ def google_auth_view(request):
         name = payload.get("name", "Unknown User")
 
         if not email:
-            return Response({"error": "Email not available"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"detail": "Email not available"}, status=status.HTTP_400_BAD_REQUEST)
 
         user, created = User.objects.get_or_create(
             email=email,
@@ -85,8 +85,8 @@ def google_auth_view(request):
         }, status=status.HTTP_200_OK)
 
     except ValueError:
-        return Response({"error": "Invalid Google token"}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"detail": "Invalid Google token"}, status=status.HTTP_400_BAD_REQUEST)
     
     except Exception as e:
-        return Response({ "error": str(e)}, status= status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return Response({ "detail": str(e)}, status= status.HTTP_500_INTERNAL_SERVER_detail)
 

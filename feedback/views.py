@@ -13,19 +13,19 @@ def add_walker_feedback(request):
     
     wanderer = Wanderer.objects.filter(user=request.user).first()
     if not wanderer:
-        return Response({"error": "User is not a Wanderer"}, status=status.HTTP_403_FORBIDDEN)
+        return Response({"detail": "User is not a Wanderer"}, status=status.HTTP_403_FORBIDDEN)
 
     walker_id = request.data.get("walker_id")
     rating = request.data.get("rating")
     feedback = request.data.get("feedback", "")
 
     if not walker_id or not rating:
-        return Response({"error": "walker_id and rating are required"}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"detail": "walker_id and rating are required"}, status=status.HTTP_400_BAD_REQUEST)
 
     try:
         walker = Walker.objects.get(user=walker_id)
     except Walker.DoesNotExist:
-        return Response({"error": "Walker not found"}, status=status.HTTP_404_NOT_FOUND)
+        return Response({"detail": "Walker not found"}, status=status.HTTP_404_NOT_FOUND)
     
     old_rating = 0
     repeated_user_feedback = WalkerFeedback.objects.filter(
@@ -67,10 +67,10 @@ def delete_walker_feedback(request, feedback_id):
     try:
         feedback = WalkerFeedback.objects.get(id=feedback_id)
     except WalkerFeedback.DoesNotExist:
-        return Response({"error": "Feedback not found"}, status=status.HTTP_404_NOT_FOUND)
+        return Response({"detail": "Feedback not found"}, status=status.HTTP_404_NOT_FOUND)
 
     if feedback.wanderer.user != request.user:
-        return Response({"error": "Not authorized to delete this feedback"}, status=status.HTTP_403_FORBIDDEN)
+        return Response({"detail": "Not authorized to delete this feedback"}, status=status.HTTP_403_FORBIDDEN)
 
     feedback.delete()
     return Response({"message": "Feedback deleted successfully"}, status=status.HTTP_200_OK)
@@ -82,7 +82,7 @@ def get_all_walker_feedback(request, walker_id):
     try:
         walker = Walker.objects.get(user=walker_id)
     except Walker.DoesNotExist:
-        return Response({"error": "Walker not found"}, status=status.HTTP_404_NOT_FOUND)
+        return Response({"detail": "Walker not found"}, status=status.HTTP_404_NOT_FOUND)
 
     feedbacks = WalkerFeedback.objects.filter(walker=walker)
     data = [
@@ -105,18 +105,18 @@ def add_wanderer_feedback(request):
     
     walker = Walker.objects.filter(user=request.user).first()
     if not walker:
-        return Response({"error": "User is not a Walker"}, status=status.HTTP_403_FORBIDDEN)
+        return Response({"detail": "User is not a Walker"}, status=status.HTTP_403_FORBIDDEN)
 
     wanderer_id = request.data.get("wanderer_id")
     rating = request.data.get("rating")
 
     if not wanderer_id or not rating:
-        return Response({"error": "wanderer_id and rating are required"}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"detail": "wanderer_id and rating are required"}, status=status.HTTP_400_BAD_REQUEST)
 
     try:
         wanderer = Wanderer.objects.get(user=wanderer_id)
     except Wanderer.DoesNotExist:
-        return Response({"error": "Wanderer not found"}, status=status.HTTP_404_NOT_FOUND)
+        return Response({"detail": "Wanderer not found"}, status=status.HTTP_404_NOT_FOUND)
 
     old_rating = 0
     repeated_user_feedback = WandererFeedback.objects.filter(walker = walker, wanderer = wanderer).first()
@@ -154,10 +154,10 @@ def delete_wanderer_feedback(request, feedback_id):
     try:
         feedback = WandererFeedback.objects.get(id=feedback_id)
     except WandererFeedback.DoesNotExist:
-        return Response({"error": "Feedback not found"}, status=status.HTTP_404_NOT_FOUND)
+        return Response({"detail": "Feedback not found"}, status=status.HTTP_404_NOT_FOUND)
 
     if feedback.walker.user != request.user:
-        return Response({"error": "Not authorized to delete this feedback"}, status=status.HTTP_403_FORBIDDEN)
+        return Response({"detail": "Not authorized to delete this feedback"}, status=status.HTTP_403_FORBIDDEN)
 
     feedback.delete()
     return Response({"message": "Feedback deleted successfully"}, status=status.HTTP_200_OK)
@@ -169,7 +169,7 @@ def get_all_wanderer_feedback(request, wanderer_id):
     try:
         wanderer = Wanderer.objects.get(user=wanderer_id)
     except Wanderer.DoesNotExist:
-        return Response({"error": "Wanderer not found"}, status=status.HTTP_404_NOT_FOUND)
+        return Response({"detail": "Wanderer not found"}, status=status.HTTP_404_NOT_FOUND)
 
     feedbacks = WandererFeedback.objects.filter(wanderer=wanderer)
     data = [

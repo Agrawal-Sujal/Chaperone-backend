@@ -3,8 +3,9 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
 from .models import *
-from .serializers import UserSerializer
 from accounts_auth.permissions import *
+from django.utils import timezone
+from datetime import timedelta
 
 @api_view(['PUT', 'PATCH'])
 @permission_classes([IsAuthenticated])
@@ -27,7 +28,7 @@ def update_user_details(request):
         }, status=status.HTTP_200_OK)
     
     except Exception as e:
-        return Response({ "error": str(e)}, status= status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return Response({ "detail": str(e)}, status= status.HTTP_500_INTERNAL_SERVER_detail)
 
     
 
@@ -48,7 +49,7 @@ def update_user_role(request):
         if is_walker:
             Wanderer.objects.filter(user=user).delete()
 
-            walker, created = Walker.objects.get_or_create(user=user,name = user.name)
+            walker, created = Walker.objects.get_or_create(user=user,name = user.name,defaults=[{"expiry_date":  timezone.now() + timedelta(days=7)}])
             message = "User promoted to Walker." if created else "User role updated to Walker."
         else:
             Walker.objects.filter(user=user).delete()
@@ -63,7 +64,7 @@ def update_user_role(request):
         }, status=status.HTTP_200_OK)
     
     except Exception as e:
-        return Response({ "error": str(e)}, status= status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return Response({ "detail": str(e)}, status= status.HTTP_500_INTERNAL_SERVER_detail)
 
 
 
@@ -80,20 +81,24 @@ def update_wanderer_preferences(request):
         try:
             wanderer = Wanderer.objects.get(user=user)
         except Wanderer.DoesNotExist:
-            return Response({"error": "You are not allowed to perform this action."}, status=status.HTTP_403_FORBIDDEN)
+            return Response({"detail": "You are not allowed to perform this action."}, status=status.HTTP_403_FORBIDDEN)
 
         need_mobility_assistance = request.data.get("need_mobility_assistance", False)
         walking_pace_ids = request.data.get("walking_pace_ids", [])
         language_ids = request.data.get("language_ids", [])
         charity_ids = request.data.get("charity_ids", [])
+        male = request.data.get("male")
+        female = request.data.get("female")
 
         preferences, created = WandererPreferences.objects.get_or_create(
             wanderer = wanderer, 
-            defaults = {"need_mobility_assistance": need_mobility_assistance}
+            defaults = {"need_mobility_assistance": need_mobility_assistance,"male":male,"female":female}
         )
 
         if not created:
             preferences.need_mobility_assistance = need_mobility_assistance
+            preferences.male = male
+            preferences.female = female
             preferences.save()
 
         if walking_pace_ids:
@@ -132,7 +137,7 @@ def update_wanderer_preferences(request):
         }, status=status.HTTP_200_OK)
     
     except Exception as e:
-        return Response({ "error": str(e)}, status= status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return Response({ "detail": str(e)}, status= status.HTTP_500_INTERNAL_SERVER_detail)
 
 
 
@@ -145,11 +150,12 @@ def update_walker_info(request):
         try:
             walker = Walker.objects.get(user=user)
         except Walker.DoesNotExist:
-            return Response({"error": "You are not allowed to perform this action."}, status=status.HTTP_403_FORBIDDEN)
+            return Response({"detail": "You are not allowed to perform this action."}, status=status.HTTP_403_FORBIDDEN)
 
         # Update basic info
         walker.photo_url = request.data.get('photo_url', walker.photo_url)
         walker.about_yourself = request.data.get('about_yourself', walker.about_yourself)
+        walker.male = request.data.get('male',walker.male)
         walker.save()
 
         language_ids = request.data.get('language_ids')
@@ -171,4 +177,4 @@ def update_walker_info(request):
         return Response({ "message": "Walker info updated successfully."},status= status.HTTP_200_OK)
 
     except Exception as e:
-        return Response({ "error": str(e)}, status= status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return Response({ "detail": str(e)}, status= status.HTTP_500_INTERNAL_SERVER_detail)

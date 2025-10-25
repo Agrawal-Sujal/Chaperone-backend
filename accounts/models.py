@@ -60,6 +60,13 @@ class Walker(models.Model):
     about_yourself = models.TextField(blank=True, null=True)
     total_rating = models.IntegerField(null=True, blank=True, default=0)
     total_wanderer = models.IntegerField(null = True, blank = True, default = 0)
+    is_free_plan = models.BooleanField(default=True)
+    expiry_date = models.DateField(null=True, blank = True)
+    latitude = models.FloatField(null = True, blank = True)
+    longitude = models.FloatField(null = True, blank = True)
+    is_active = models.BooleanField(default= False)
+    max_walk_distance = models.FloatField(null = True, blank = True)
+    male = models.BooleanField(null=True, blank= True)
 
     def __str__(self):
         return f"Walker: {self.user.email}"
@@ -81,6 +88,8 @@ class Wanderer(models.Model):
 class WandererPreferences(models.Model):
     wanderer = models.OneToOneField(Wanderer, on_delete=models.CASCADE, primary_key=True)
     need_mobility_assistance = models.BooleanField(default=False)
+    male = models.BooleanField(default=False)
+    female = models.BooleanField(default=False)
 
     def __str__(self):
         return f"Preferences for {self.wanderer.user.email}"
