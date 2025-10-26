@@ -43,7 +43,8 @@ INSTALLED_APPS = [
     'accounts_auth',
     'feedback',
     'payments',
-    'search'
+    'search',
+    'walkRequests'
 ]
 
 MIDDLEWARE = [

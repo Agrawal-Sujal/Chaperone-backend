@@ -6,6 +6,7 @@ from .models import *
 from accounts_auth.permissions import *
 from django.utils import timezone
 from datetime import timedelta
+from feedback.models import *
 
 @api_view(['PUT', 'PATCH'])
 @permission_classes([IsAuthenticated])
@@ -282,5 +283,51 @@ def update_user_profile(request):
 
         return Response({"message": message}, status=status.HTTP_200_OK)
 
+    except Exception as e:
+        return Response({"detail": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_walker_info(request, walker_id):
+    try:
+        # Get the walker object
+        walker = Walker.objects.get(user_id=walker_id)
+        
+        # Get walker's walking paces
+        walker_paces = WalkerWalkingPace.objects.filter(walker=walker).select_related('walking_pace')
+        paces = [wp.walking_pace.name for wp in walker_paces]
+        
+        # Get walker's languages
+        walker_languages = WalkerLanguage.objects.filter(walker=walker).select_related('language')
+        languages = [wl.language.name for wl in walker_languages]
+        
+        # Get wanderer feedbacks for this walker
+        feedbacks = WalkerFeedback.objects.filter(walker=walker).values(
+            'wanderer_name', 
+            'rating', 
+            'feedback'
+        )
+        
+        # Calculate average rating
+        if walker.total_wanderer > 0:
+            average_rating = walker.total_rating / walker.total_wanderer
+        else:
+            average_rating = 0
+        
+        # Prepare response data
+        walker_data = {
+            'name': walker.name,
+            'rating': round(average_rating, 2),
+            'about': walker.about_yourself,
+            'paces': paces,
+            'languages': languages,
+            'feedbacks': list(feedbacks)
+        }
+        
+        return Response(walker_data, status=status.HTTP_200_OK)
+        
+    except Walker.DoesNotExist:
+        return Response({"detail": "Walker not found"}, status=status.HTTP_404_NOT_FOUND)
     except Exception as e:
         return Response({"detail": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

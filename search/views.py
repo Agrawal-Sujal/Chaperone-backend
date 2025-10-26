@@ -18,7 +18,7 @@ def calculate_distance(lat1, lon1, lat2, lon2):
     return R * c  
 
 
-@api_view(['GET'])
+@api_view(['POST'])
 @permission_classes([IsAuthenticated, IsWanderer])
 def search_companion(request):
     try:
@@ -75,7 +75,7 @@ def search_companion(request):
                 "name": walker.name,
                 "photo_url": walker.photo_url,
                 "about": walker.about_yourself,
-                # "distance": distance,
+                "distance": distance,
                 "rating": rating,
             })
 
