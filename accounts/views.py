@@ -331,3 +331,70 @@ def get_walker_info(request, walker_id):
         return Response({"detail": "Walker not found"}, status=status.HTTP_404_NOT_FOUND)
     except Exception as e:
         return Response({"detail": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated,IsWanderer])
+def get_wanderer_summary(request):
+    try:
+        user = request.user
+        try:
+            wanderer = Wanderer.objects.get(user=user)
+        except Wanderer.DoesNotExist:
+            return Response({"detail": "You are not allowed to perform this action."}, status=status.HTTP_403_FORBIDDEN)
+        if wanderer.total_wanderer is not 0:
+            rating = wanderer.total_rating / wanderer.total_wanderer
+        else : rating = 0
+        wanderer_summary = {
+            "total_charity": wanderer.total_charity,
+            "total_walks": wanderer.total_walks,
+            "rating": rating
+        }
+        return Response(wanderer_summary,status = status.HTTP_200_OK)
+    except Exception as e:
+        return Response({"detail": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+@api_view(['GET'])
+@permission_classes([IsAuthenticated,IsWalker])
+def get_walker_summary(request):
+    try:
+        user = request.user
+        try:
+            walker = Walker.objects.get(user=user)
+        except Walker.DoesNotExist:
+            return Response({"detail": "You are not allowed to perform this action."}, status=status.HTTP_403_FORBIDDEN)
+        if walker.total_wanderer is not 0:
+            rating = walker.total_rating / walker.total_wanderer
+        else : rating = 0
+        walker_summary = {
+            "total_earning": walker.total_earning,
+            "total_walks": walker.total_walks,
+            "rating": rating,
+            "is_active": walker.is_active,
+            "max_distance": walker.max_walk_distance
+        }
+        return Response(walker_summary,status = status.HTTP_200_OK)
+    except Exception as e:
+        print(e)
+        return Response({"detail": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated,IsWalker])
+def update_walker_status(request):
+    try:
+        user = request.user
+        is_active = request.data.get('is_active')
+        max_distance = request.data.get('max_distance')
+        try:
+            walker = Walker.objects.get(user=user)
+        except Walker.DoesNotExist:
+            return Response({"detail": "You are not allowed to perform this action."}, status=status.HTTP_403_FORBIDDEN)
+
+        walker.is_active = is_active
+        walker.max_walk_distance = max_distance
+        walker.save()
+        message = "Status updated successfully"
+        return Response({"message": message}, status=status.HTTP_200_OK)
+    except Exception as e:
+        return Response({"detail": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

@@ -65,8 +65,10 @@ class Walker(models.Model):
     latitude = models.FloatField(null = True, blank = True)
     longitude = models.FloatField(null = True, blank = True)
     is_active = models.BooleanField(default= False)
-    max_walk_distance = models.FloatField(null = True, blank = True)
+    max_walk_distance = models.FloatField(null = True, blank = True,default= 1.00)
     male = models.BooleanField(null=True, blank= True)
+    total_walks = models.IntegerField(default = 0)
+    total_earning = models.FloatField(default=0.0)
 
     def __str__(self):
         return f"Walker: {self.user.email}"
@@ -77,7 +79,8 @@ class Wanderer(models.Model):
     name = models.CharField(max_length = 100, null = True, blank = True)
     total_rating = models.IntegerField(null=True, blank=True, default = 0)
     total_walker = models.IntegerField(null = True, blank = True, default = 0)
-
+    total_walks = models.IntegerField(default = 0)
+    total_charity = models.FloatField(default=0.0)
 
     def __str__(self):
         return f"Wanderer: {self.user.email}"

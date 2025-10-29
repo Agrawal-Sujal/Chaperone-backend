@@ -138,5 +138,5 @@ REST_FRAMEWORK = {
     ],
 }
 
-GOOGLE_CLIENT_ID = "599242703933-7b7qrros0e3v1m7hh9o53fgkg1s5bcip.apps.googleusercontent.com"
+GOOGLE_CLIENT_ID = "230407577159-t2j39ncri8es7ojdlduutbfdurfh2qfm.apps.googleusercontent.com"
 AUTH_USER_MODEL = 'accounts.User'
