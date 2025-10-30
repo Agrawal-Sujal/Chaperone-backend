@@ -81,7 +81,11 @@ def google_auth_view(request):
 
         return Response({
             "token": token.key,
-            "id": user.id
+            "id": user.id,
+            "is_verified":user.is_verified,
+            "is_profile_completed":user.is_profile_completed,
+            "name": user.name,
+            "is_walker":user.is_walker
         }, status=status.HTTP_200_OK)
 
     except ValueError:

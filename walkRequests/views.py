@@ -44,13 +44,17 @@ def send_request(request):
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated,IsWalker])
-def reject_request(request, request_id):
+def reject_request(request):
     try:
         walker = Walker.objects.get(user=request.user)
+        request_id = request.data.get('request_id')
         req = Request.objects.get(id=request_id, walker=walker)
 
         if req.is_accepted:
             return Response({"detail": "Request already accepted"}, status=status.HTTP_400_BAD_REQUEST)
+        if req.is_rejected:
+            return Response({"detail": "Request already rejected"}, status=status.HTTP_400_BAD_REQUEST)
+
 
         req.is_rejected = True
         req.rejection_reason = request.data.get("rejection_reason", "")
@@ -72,13 +76,16 @@ def reject_request(request, request_id):
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated,IsWalker])
-def accept_request(request, request_id):
+def accept_request(request):
     try:
         walker = Walker.objects.get(user=request.user)
+        request_id = request.data.get('request_id')
         req = Request.objects.get(id=request_id, walker=walker)
 
         if req.is_rejected:
             return Response({"detail": "Request already rejected"}, status=status.HTTP_400_BAD_REQUEST)
+        if req.is_accepted:
+            return Response({"detail": "Request already accepted"}, status=status.HTTP_400_BAD_REQUEST)
 
         req.is_accepted = True
         req.save()
@@ -147,6 +154,56 @@ def get_all_wanderer_requests(request):
 
     except Wanderer.DoesNotExist:
         return Response({"error": "Only wanderers can view their requests"}, status=status.HTTP_403_FORBIDDEN)
+    except Exception as e:
+        print(e)
+        return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+    
+from math import radians, sin, cos, sqrt, atan2
+
+def calculate_distance(lat1, lon1, lat2, lon2):
+    R = 6371  
+    dlat = radians(lat2 - lat1)
+    dlon = radians(lon2 - lon1)
+    a = sin(dlat / 2) ** 2 + cos(radians(lat1)) * cos(radians(lat2)) * sin(dlon / 2) ** 2
+    c = 2 * atan2(sqrt(a), sqrt(1 - a))
+    return R * c  
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_pending_walker_requests(request):
+    try:
+        walker = Walker.objects.get(user=request.user)
+        # Get only pending requests (not accepted & not rejected)
+        requests_qs = Request.objects.filter(
+            walker=walker,
+            is_accepted=False,
+            is_rejected=False
+        ).order_by('-created_at')
+        
+        data = []
+        for r in requests_qs:
+            if r.wanderer.total_walker is not 0:
+                rating = r.wanderer.total_rating / r.wanderer.total_walker
+            else : rating = 0
+            distance = calculate_distance(r.loc_lat,r.loc_long,walker.latitude,walker.longitude)
+            data.append({
+                "id": r.id,
+                "wanderer_id": r.wanderer.user.id,
+                "wanderer_name": r.wanderer.name if hasattr(r.wanderer, 'name') else None,
+                "wanderer_rating": rating,
+                "date": str(r.date),
+                "location_name": r.location_name,
+                "time": r.time,
+                "loc_lat": r.loc_lat,
+                "loc_long": r.loc_long,
+                "created_at": r.created_at.strftime("%Y-%m-%d %H:%M:%S"),
+                "distance": distance
+            })
+
+        return Response(data, status=status.HTTP_200_OK)
+
+    except Walker.DoesNotExist:
+        return Response({"error": "Only walkers can view pending requests"}, status=status.HTTP_403_FORBIDDEN)
     except Exception as e:
         print(e)
         return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)

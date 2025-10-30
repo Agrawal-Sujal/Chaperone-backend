@@ -38,7 +38,8 @@ class User(AbstractBaseUser, PermissionsMixin):
     phone_number = models.BigIntegerField(blank=True, null=True)
     is_walker = models.BooleanField(blank=True, null=True)
     date_of_birth = models.CharField(max_length=255, blank=True, null=True)
-
+    is_verified = models.BooleanField(default = False)
+    is_profile_completed = models.BooleanField(default = False)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
 
@@ -64,6 +65,7 @@ class Walker(models.Model):
     expiry_date = models.DateField(null=True, blank = True)
     latitude = models.FloatField(null = True, blank = True)
     longitude = models.FloatField(null = True, blank = True)
+    location_name = models.CharField(max_length=200,null = True,blank = True)
     is_active = models.BooleanField(default= False)
     max_walk_distance = models.FloatField(null = True, blank = True,default= 1.00)
     male = models.BooleanField(null=True, blank= True)

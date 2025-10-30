@@ -10,5 +10,6 @@ urlpatterns = [
     path('walker-info/<int:walker_id>/',get_walker_info,name='get_walker_info'),
     path('update-walker-status/',update_walker_status,name = 'update_walker_status'),
     path('get-walker-summary/',get_walker_summary,name='get_walker_summary'),
-    path('get-wanderer-summary/',get_wanderer_summary,name = 'get_wanderer_summary')
+    path('get-wanderer-summary/',get_wanderer_summary,name = 'get_wanderer_summary'),
+    path('get-wanderer-info/<int:wanderer_id>/',get_wanderer_info,name = 'get_wanderer_info')
 ]

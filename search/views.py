@@ -67,9 +67,10 @@ def search_companion(request):
             walker_paces = WalkerWalkingPace.objects.filter(walker=walker).values_list('walking_pace', flat=True)
             if not any(pace in walker_paces for pace in pace_preferences):
                 continue
-
-            rating = walker.total_rating/ walker.total_wanderer
-
+            if walker.total_wanderer != 0:
+                rating = walker.total_rating/ walker.total_wanderer
+            else :
+                rating = 0
             matching_walkers.append({
                 "id": walker.user.id,
                 "name": walker.name,
@@ -82,5 +83,5 @@ def search_companion(request):
         return Response({"results": matching_walkers}, status=status.HTTP_200_OK)
 
     except Exception as e:
-        return Response({"detail": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_detail)
+        return Response({"detail": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 

@@ -21,7 +21,7 @@ def update_user_details(request):
         user.name = name
         user.date_of_birth = date_of_birth
         user.phone_number = phone_number
-
+        user.is_verified = True
         user.save()
         return Response({
             'message': 'User details updated successfully',
@@ -197,8 +197,7 @@ def update_user_profile(request):
         language_ids = request.data.get("language_ids", [])
         charity_ids = request.data.get("charity_ids", [])
 
-        user.is_walker = is_walker
-        user.save()
+        
 
         Walker.objects.filter(user=user).delete()
         Wanderer.objects.filter(user=user).delete()
@@ -237,6 +236,9 @@ def update_user_profile(request):
                     continue
 
             message = "Walker details saved successfully."
+            user.is_walker = is_walker
+            user.is_profile_completed = True
+            user.save()
 
         else:
             wanderer, _ = Wanderer.objects.get_or_create(user=user, name=user.name)
@@ -280,7 +282,10 @@ def update_user_profile(request):
                     continue
 
             message = "Wanderer details saved successfully."
-
+            user.is_walker = is_walker
+            user.is_profile_completed = True
+            user.save()
+            
         return Response({"message": message}, status=status.HTTP_200_OK)
 
     except Exception as e:
@@ -334,6 +339,44 @@ def get_walker_info(request, walker_id):
     
 
 @api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_wanderer_info(request, wanderer_id):
+    try:
+        # Get the walker object
+        wanderer = Wanderer.objects.get(user_id=wanderer_id)
+        wanderer_pref = WandererPreferences.objects.get(wanderer = wanderer)
+        # Get walker's walking paces
+        wanderer_paces = WandererPreferenceWalkingPace.objects.filter(wanderer = wanderer_pref).select_related('walking_pace')
+        paces = [wp.walking_pace.name for wp in wanderer_paces]
+        
+        # Get walker's languages
+        wanderer_language = WandererPreferenceLanguage.objects.filter(wanderer = wanderer_pref).select_related('language')
+        languages = [wl.language.name for wl in wanderer_language]
+
+        
+        # Calculate average rating
+        if wanderer.total_walker > 0:
+            average_rating = wanderer.total_rating / wanderer.total_walker
+        else:
+            average_rating = 0
+        
+        # Prepare response data
+        wanderer_data = {
+            'name': wanderer.name,
+            'rating': round(average_rating, 2),
+            'paces': paces,
+            'languages': languages,
+        }
+        
+        return Response(wanderer_data, status=status.HTTP_200_OK)
+        
+    except Wanderer.DoesNotExist:
+        return Response({"detail": "Wanderer not found"}, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        return Response({"detail": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+
+@api_view(['GET'])
 @permission_classes([IsAuthenticated,IsWanderer])
 def get_wanderer_summary(request):
     try:
@@ -342,8 +385,8 @@ def get_wanderer_summary(request):
             wanderer = Wanderer.objects.get(user=user)
         except Wanderer.DoesNotExist:
             return Response({"detail": "You are not allowed to perform this action."}, status=status.HTTP_403_FORBIDDEN)
-        if wanderer.total_wanderer is not 0:
-            rating = wanderer.total_rating / wanderer.total_wanderer
+        if wanderer.total_walker is not 0:
+            rating = wanderer.total_rating / wanderer.total_walker
         else : rating = 0
         wanderer_summary = {
             "total_charity": wanderer.total_charity,
@@ -371,7 +414,10 @@ def get_walker_summary(request):
             "total_walks": walker.total_walks,
             "rating": rating,
             "is_active": walker.is_active,
-            "max_distance": walker.max_walk_distance
+            "max_distance": walker.max_walk_distance,
+            "location_name": walker.location_name,
+            "long":walker.longitude,
+            "lat":walker.latitude
         }
         return Response(walker_summary,status = status.HTTP_200_OK)
     except Exception as e:
@@ -386,6 +432,11 @@ def update_walker_status(request):
         user = request.user
         is_active = request.data.get('is_active')
         max_distance = request.data.get('max_distance')
+        location_name = request.data.get('location_name')
+        long = request.data.get('long')
+        lat = request.data.get('lat')
+        print(long)
+        print(lat)
         try:
             walker = Walker.objects.get(user=user)
         except Walker.DoesNotExist:
@@ -393,8 +444,14 @@ def update_walker_status(request):
 
         walker.is_active = is_active
         walker.max_walk_distance = max_distance
+        walker.location_name = location_name
+        walker.longitude = long
+        walker.latitude = lat
         walker.save()
         message = "Status updated successfully"
         return Response({"message": message}, status=status.HTTP_200_OK)
     except Exception as e:
         return Response({"detail": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+
+    
