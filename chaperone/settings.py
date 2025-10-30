@@ -140,3 +140,10 @@ REST_FRAMEWORK = {
 
 GOOGLE_CLIENT_ID = "230407577159-t2j39ncri8es7ojdlduutbfdurfh2qfm.apps.googleusercontent.com"
 AUTH_USER_MODEL = 'accounts.User'
+
+import os
+from dotenv import load_dotenv
+load_dotenv()
+
+RAZORPAY_KEY_ID = os.getenv("RAZORPAY_KEY_ID")
+RAZORPAY_KEY_SECRET = os.getenv("RAZORPAY_KEY_SECRET")

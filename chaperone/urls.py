@@ -23,5 +23,6 @@ urlpatterns = [
     path('api/accounts/',include('accounts.urls')),
     path('api/feedback/',include('feedback.urls')),
     path('api/search/',include('search.urls')),
-    path('api/request/',include('walkRequests.urls'))
+    path('api/request/',include('walkRequests.urls')),
+    path('api/payment/',include('payments.urls'))
 ]
