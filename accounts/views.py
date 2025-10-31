@@ -222,7 +222,7 @@ def update_user_profile(request):
             WalkerLanguage.objects.filter(walker=walker).delete()
             for lang_id in language_ids:
                 try:
-                    lang = Language.objects.get(id=lang_id)
+                    lang = Language.objects.get(id=lang_id+1)
                     WalkerLanguage.objects.create(walker=walker, language=lang)
                 except Language.DoesNotExist:
                     continue
@@ -230,7 +230,7 @@ def update_user_profile(request):
             WalkerWalkingPace.objects.filter(walker=walker).delete()
             for pace_id in walking_pace_ids:
                 try:
-                    pace = WalkingPace.objects.get(id=pace_id)
+                    pace = WalkingPace.objects.get(id=pace_id+1)
                     WalkerWalkingPace.objects.create(walker=walker, walking_pace=pace)
                 except WalkingPace.DoesNotExist:
                     continue
@@ -260,7 +260,7 @@ def update_user_profile(request):
             WandererPreferenceWalkingPace.objects.filter(wanderer=preferences).delete()
             for pace_id in walking_pace_ids:
                 try:
-                    pace = WalkingPace.objects.get(id=pace_id)
+                    pace = WalkingPace.objects.get(id=pace_id+1)
                     WandererPreferenceWalkingPace.objects.create(wanderer=preferences, walking_pace=pace)
                 except WalkingPace.DoesNotExist:
                     continue
@@ -268,7 +268,7 @@ def update_user_profile(request):
             WandererPreferenceLanguage.objects.filter(wanderer=preferences).delete()
             for lang_id in language_ids:
                 try:
-                    lang = Language.objects.get(id=lang_id)
+                    lang = Language.objects.get(id=lang_id+1)
                     WandererPreferenceLanguage.objects.create(wanderer=preferences, language=lang)
                 except Language.DoesNotExist:
                     continue
@@ -276,7 +276,7 @@ def update_user_profile(request):
             WandererPreferenceCharity.objects.filter(wanderer=preferences).delete()
             for charity_id in charity_ids:
                 try:
-                    charity = Charity.objects.get(id=charity_id)
+                    charity = Charity.objects.get(id=charity_id+1)
                     WandererPreferenceCharity.objects.create(wanderer=preferences, charity=charity)
                 except Charity.DoesNotExist:
                     continue

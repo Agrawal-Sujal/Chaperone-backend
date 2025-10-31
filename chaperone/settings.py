@@ -23,9 +23,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-0fpgq&4n^=59+xvf_m2v6gj!qmqj9z_ox=^_xw7ifjeeswsn=r'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = ['0.0.0.0','10.44.155.82','10.98.31.82']
+ALLOWED_HOSTS = ['0.0.0.0','10.44.155.82','10.98.31.82','193.181.211.55']
 
 
 # Application definition
@@ -90,11 +90,28 @@ WSGI_APPLICATION = 'chaperone.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'db.sqlite3',
+#     }
+# }
+
+
+import os
+from dotenv import load_dotenv
+load_dotenv()
+
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
+  "default": {
+    "ENGINE": "django.db.backends.mysql",
+    "NAME": os.getenv("DB_NAME"),
+    "USER": os.getenv("DB_USER"),
+    "PASSWORD": os.getenv("DB_PASSWORD"),
+    "HOST": os.getenv("DB_HOST", "localhost"),
+    "PORT": os.getenv("DB_PORT", "3306"),
+    "OPTIONS": {"init_command": "SET sql_mode='STRICT_TRANS_TABLES'"},
+  }
 }
 
 
@@ -151,9 +168,6 @@ REST_FRAMEWORK = {
 GOOGLE_CLIENT_ID = "230407577159-t2j39ncri8es7ojdlduutbfdurfh2qfm.apps.googleusercontent.com"
 AUTH_USER_MODEL = 'accounts.User'
 
-import os
-from dotenv import load_dotenv
-load_dotenv()
 
 RAZORPAY_KEY_ID = os.getenv("RAZORPAY_KEY_ID")
 RAZORPAY_KEY_SECRET = os.getenv("RAZORPAY_KEY_SECRET")
