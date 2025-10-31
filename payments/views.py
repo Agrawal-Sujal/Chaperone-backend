@@ -7,7 +7,8 @@ from .models import PaymentOrder
 import traceback
 import hmac
 import hashlib
-from walkRequests.models import Request
+from walkRequests.models import *
+from walks.models import *
 
 
 
@@ -104,19 +105,47 @@ class VerifyOrderView(APIView):
                 order.save()
                 return Response({"status": "Payment verification failed"}, status=status.HTTP_400_BAD_REQUEST)
 
-            # Update order in DB
+           
+
+            # ✅ Create Room
+            room = Room(
+                walker=request.walker,
+                wanderer=request.wanderer,
+                start_location_name=request.location_name,
+                start_location_latitude=request.loc_lat,
+                start_location_longitude=request.loc_long
+            )
+
+            room.save()
+
+            # ✅ Create ScheduledWalks
+            scheduled_walk = ScheduledWalks.objects.create(
+                walker=request.walker,
+                wanderer=request.wanderer,
+                room=room,
+                walk_completed=False,
+                date=request.date,
+                time=request.time,
+                start_location_name=request.location_name,
+                start_location_latitude=request.loc_lat,
+                start_location_longitude=request.loc_long
+            )
+
+             # Update order in DB
             order = PaymentOrder.objects.get(order_id=razorpay_order_id)
             order.payment_id = razorpay_payment_id
             order.signature = razorpay_signature
             order.status = "paid"
-            order.save()
 
             request.fees_paid = True
-            request.walker.total_earning = request.walker.total_earning + order.amount/100
-            request.wanderer.total_charity = request.wanderer.total_charity + order.amount/100
+            request.walker.total_earning += order.amount / 100
 
+            request.wanderer.total_charity += order.amount / 100
+            order.save()
+            request.walker.save()
+            request.wanderer.save()
+            
             request.save()
-
 
             return Response({"status": "Payment verified successfully"}, status=status.HTTP_200_OK)
 
@@ -124,6 +153,7 @@ class VerifyOrderView(APIView):
             return Response({"error": "Order not found"}, status=status.HTTP_404_NOT_FOUND)
 
         except Exception as e:
+            print(str(e))
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
 from rest_framework.permissions import IsAuthenticated
@@ -141,8 +171,9 @@ def get_payment_detail(request,payment_id):
         data = {
             "payment_id": payment.payment_id,
             "status": payment.status,
-            "amount":payment.amount,
-            "timestamp": payment.updated_at
+            "amount":payment.amount/100,
+            "timestamp": str(payment.updated_at)
         }
+        return Response(data, status=status.HTTP_200_OK)
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

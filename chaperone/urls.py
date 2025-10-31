@@ -24,5 +24,6 @@ urlpatterns = [
     path('api/feedback/',include('feedback.urls')),
     path('api/search/',include('search.urls')),
     path('api/request/',include('walkRequests.urls')),
-    path('api/payments/',include('payments.urls'))
+    path('api/payments/',include('payments.urls')),
+    path('api/walks/',include("walks.urls"))
 ]

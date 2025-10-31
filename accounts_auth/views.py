@@ -1,4 +1,4 @@
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import api_view, permission_classes,authentication_classes
 from rest_framework.response import Response
 from rest_framework import status, permissions
 from rest_framework.authtoken.models import Token
@@ -54,11 +54,14 @@ def login_view(request):
 
 
 @api_view(['POST'])
+@authentication_classes([])
 @permission_classes([permissions.AllowAny])
 def google_auth_view(request):
 
     try:
         credential = request.data.get('id_token')
+
+        # print(credential)
 
         payload = id_token.verify_oauth2_token(
             credential,
