@@ -22,7 +22,7 @@ class CreateOrderView(APIView):
             currency = request.data.get("currency", "INR")
 
             if not amount:
-                return Response({"error": "Amount is required"}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({"detail": "Amount is required"}, status=status.HTTP_400_BAD_REQUEST)
             
             try:
                 request = Request.objects.get(id=request_id)
@@ -65,7 +65,7 @@ class CreateOrderView(APIView):
 
         except Exception as e:
             traceback.print_exc()
-            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response({"detail": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_detail)
         
 
 class VerifyOrderView(APIView):
@@ -79,7 +79,7 @@ class VerifyOrderView(APIView):
             razorpay_signature = request.data.get("signature")
 
             if not razorpay_payment_id or not razorpay_order_id or not razorpay_signature:
-                return Response({"error": "Missing fields"}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({"detail": "Missing fields"}, status=status.HTTP_400_BAD_REQUEST)
             
             try:
                 request = Request.objects.get(payment_id=id)
@@ -103,7 +103,7 @@ class VerifyOrderView(APIView):
                 order.signature = razorpay_signature
                 order.status = "failed"
                 order.save()
-                return Response({"status": "Payment verification failed"}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({"detail": "Payment verification failed"}, status=status.HTTP_400_BAD_REQUEST)
 
            
 
@@ -150,11 +150,11 @@ class VerifyOrderView(APIView):
             return Response({"status": "Payment verified successfully"}, status=status.HTTP_200_OK)
 
         except PaymentOrder.DoesNotExist:
-            return Response({"error": "Order not found"}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"detail": "Order not found"}, status=status.HTTP_404_NOT_FOUND)
 
         except Exception as e:
             print(str(e))
-            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response({"detail": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_detail)
         
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import api_view, permission_classes
@@ -176,4 +176,4 @@ def get_payment_detail(request,payment_id):
         }
         return Response(data, status=status.HTTP_200_OK)
     except Exception as e:
-        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return Response({"detail": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_detail)

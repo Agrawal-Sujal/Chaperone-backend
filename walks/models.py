@@ -25,9 +25,9 @@ class LiveLocation(models.Model):
 
 
 class ScheduledWalks(models.Model):
-    walker = models.OneToOneField(Walker,on_delete=models.CASCADE)
-    wanderer = models.OneToOneField(Wanderer,on_delete=models.CASCADE)
-    room = models.OneToOneField(Room,on_delete=models.CASCADE)
+    walker = models.ForeignKey(Walker,on_delete=models.CASCADE)
+    wanderer = models.ForeignKey(Wanderer,on_delete=models.CASCADE)
+    room = models.ForeignKey(Room,on_delete=models.CASCADE)
     walk_completed = models.BooleanField(default=False)
     date = models.CharField(max_length=300)
     time = models.CharField(max_length=300)

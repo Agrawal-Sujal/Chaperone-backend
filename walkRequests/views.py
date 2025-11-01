@@ -153,10 +153,10 @@ def get_all_wanderer_requests(request):
         return Response(data, status=status.HTTP_200_OK)
 
     except Wanderer.DoesNotExist:
-        return Response({"error": "Only wanderers can view their requests"}, status=status.HTTP_403_FORBIDDEN)
+        return Response({"detail": "Only wanderers can view their requests"}, status=status.HTTP_403_FORBIDDEN)
     except Exception as e:
         print(e)
-        return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
     
 from math import radians, sin, cos, sqrt, atan2
 
@@ -203,7 +203,7 @@ def get_pending_walker_requests(request):
         return Response(data, status=status.HTTP_200_OK)
 
     except Walker.DoesNotExist:
-        return Response({"error": "Only walkers can view pending requests"}, status=status.HTTP_403_FORBIDDEN)
+        return Response({"detail": "Only walkers can view pending requests"}, status=status.HTTP_403_FORBIDDEN)
     except Exception as e:
         print(e)
-        return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
