@@ -65,7 +65,7 @@ class CreateOrderView(APIView):
 
         except Exception as e:
             traceback.print_exc()
-            return Response({"detail": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_detail)
+            return Response({"detail": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
 
 class VerifyOrderView(APIView):
@@ -154,7 +154,7 @@ class VerifyOrderView(APIView):
 
         except Exception as e:
             print(str(e))
-            return Response({"detail": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_detail)
+            return Response({"detail": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import api_view, permission_classes
@@ -176,4 +176,4 @@ def get_payment_detail(request,payment_id):
         }
         return Response(data, status=status.HTTP_200_OK)
     except Exception as e:
-        return Response({"detail": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_detail)
+        return Response({"detail": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
