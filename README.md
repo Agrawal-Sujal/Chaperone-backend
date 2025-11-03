@@ -65,6 +65,11 @@ The backend uses a **normalized relational schema** for user management, walk se
 *   **`payment`** → records transaction info
 
 
+Explore the complete Chaperone Database Schema with entity relationships and table references here:
+
+<img width="3893" height="2494" alt="Chaperone" src="https://github.com/user-attachments/assets/7831ae37-c2d0-462b-ab4f-dbebdf8b52a9" />
+[View Schema on dbdiagram.io](https://dbdiagram.io/d/Chaperone-68f08a902e68d21b41b93b48)
+
 * * *
 
 🛠️ Tech Stack
