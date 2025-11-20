@@ -294,6 +294,70 @@ def update_user_profile(request):
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
+def get_walker_profile(request):
+    try:
+        user = request.user
+
+        # Check if walker exists
+        walker = Walker.objects.filter(user=user).first()
+        if not walker:
+            return Response({"detail": "Walker profile not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        languages = WalkerLanguage.objects.filter(walker=walker).values_list("language__id", flat=True)
+        pace = WalkerWalkingPace.objects.filter(walker=walker).values_list("walking_pace__id", flat=True)
+
+        data = {
+            "photo_url": walker.photo_url,
+            "about_yourself": walker.about_yourself,
+            "male": walker.male,
+            "languages": list(languages),
+            "walking_pace": list(pace),
+        }
+
+        return Response(data, status=status.HTTP_200_OK)
+
+    except Exception as e:
+        return Response({"detail": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_wanderer_profile(request):
+    try:
+        user = request.user
+
+        wanderer = Wanderer.objects.filter(user=user).first()
+        if not wanderer:
+            return Response({"detail": "Wanderer profile not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        preferences = WandererPreferences.objects.filter(wanderer=wanderer).first()
+
+        if not preferences:
+            return Response({"detail": "Preferences not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        pace = WandererPreferenceWalkingPace.objects.filter(wanderer=preferences).values_list("walking_pace__id", flat=True)
+        languages = WandererPreferenceLanguage.objects.filter(wanderer=preferences).values_list("language__id", flat=True)
+        charities = WandererPreferenceCharity.objects.filter(wanderer=preferences).values_list("charity__id", flat=True)
+        
+        data = {
+            "need_mobility_assistance": preferences.need_mobility_assistance,
+            "male": preferences.male,
+            "female": preferences.female,
+            "walking_pace_ids": list(pace),
+            "language_ids": list(languages),
+            "charity_ids": list(charities)
+        }
+        # print(str(data))
+        return Response(data, status=status.HTTP_200_OK)
+
+    except Exception as e:
+        print(e)
+        return Response({"detail": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def get_walker_info(request, walker_id):
     try:
         # Get the walker object
