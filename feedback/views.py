@@ -26,20 +26,27 @@ def add_walker_feedback(request):
         walker = Walker.objects.get(user=walker_id)
     except Walker.DoesNotExist:
         return Response({"detail": "Walker not found"}, status=status.HTTP_404_NOT_FOUND)
-    
+
+    # Validate rating between 1 and 5
+    rating = max(1, min(5, rating))
+
     old_rating = 0
-    repeated_user_feedback = WalkerFeedback.objects.filter(
-    walker=walker, wanderer=wanderer
-    ).first()
-    new_feedback = False
-    if repeated_user_feedback:
-        old_rating = repeated_user_feedback.rating
-        repeated_user_feedback.rating = rating 
-        repeated_user_feedback.feedback = feedback
-        repeated_user_feedback.save()
-    else :
-        new_feedback = True
-        wf = WalkerFeedback.objects.create(
+    is_new_feedback = False
+
+    try:
+        feedback_obj = WalkerFeedback.objects.get(
+            walker=walker, 
+            wanderer=wanderer
+        )
+        # Existing feedback
+        old_rating = feedback_obj.rating
+        feedback_obj.rating = rating
+        feedback_obj.feedback = feedback
+        feedback_obj.save()
+    except WalkerFeedback.DoesNotExist:
+        # New feedback
+        is_new_feedback = True
+        feedback_obj = WalkerFeedback.objects.create(
             walker=walker,
             wanderer=wanderer,
             wanderer_name=wanderer.user.name,
@@ -47,14 +54,14 @@ def add_walker_feedback(request):
             feedback=feedback
         )
 
-    new_total_rating = walker.total_rating - old_rating + rating
-    new_total_wanderer = walker.total_wanderer
-    if new_feedback:
-        new_total_wanderer = new_total_wanderer + 1
-    
-    walker.total_rating = new_total_rating
-    walker.total_wanderer = new_total_wanderer
+    # Update walker rating stats
+    walker.total_rating = walker.total_rating - old_rating + rating
+
+    if is_new_feedback:
+        walker.total_wanderer += 1  # increase count only for new feedback
+
     walker.save()
+
 
     return Response({
         "message": "Feedback submitted successfully"
