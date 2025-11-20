@@ -138,9 +138,10 @@ class VerifyOrderView(APIView):
             order.status = "paid"
 
             request.fees_paid = True
-            request.walker.total_earning += order.amount / 100
+            request.walker.total_earning += 500
 
-            request.wanderer.total_charity += order.amount / 100
+            request.wanderer.total_charity += 50
+            
             order.save()
             request.walker.save()
             request.wanderer.save()

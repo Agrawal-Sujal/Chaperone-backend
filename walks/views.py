@@ -117,6 +117,11 @@ def complete_walk(request, room_id):
     try:
         walk = ScheduledWalks.objects.get(room__id=room_id)
         walk.walk_completed = True
+        walk.walker.total_walks +=1
+        walk.wanderer.total_walks +=1
+        walk.wanderer.save()
+        walk.walker.save()
+        
         walk.save()
         return Response({"message": "Walk marked as completed"}, status=status.HTTP_200_OK)
     except ScheduledWalks.DoesNotExist:
