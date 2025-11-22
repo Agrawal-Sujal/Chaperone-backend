@@ -6,3 +6,4 @@ from .models import *
 
 admin.site.register(ScheduledWalks)
 admin.site.register(Room)
+admin.site.register(LiveLocation)

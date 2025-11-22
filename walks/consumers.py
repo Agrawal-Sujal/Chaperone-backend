@@ -3,6 +3,7 @@ import json
 from .models import Room, LiveLocation
 from accounts.models import *
 from channels.db import database_sync_to_async
+import time
 
 class LocationChannel(AsyncWebsocketConsumer):
 
@@ -11,7 +12,7 @@ class LocationChannel(AsyncWebsocketConsumer):
     
         self.room_name = self.scope['url_route']['kwargs']['room_name']
         self.room_group_name = f"location_{self.room_name}"
-
+        self.last_location_update = 0 
         await self.channel_layer.group_add(self.room_group_name, self.channel_name)
         await self.accept()
 
@@ -27,9 +28,20 @@ class LocationChannel(AsyncWebsocketConsumer):
         action = data.get("action")
 
         if action == "update_location":
-            user_id = data["user_id"]
+
+            now = time.time()
+            if now - self.last_location_update < 1.0:
+                return   # Ignore updates faster than 1 sec
+
+            self.last_location_update = now
+
+
+            user_id = data.get("user_id")
             lat = data["latitude"]
             lon = data["longitude"]
+
+            if not user_id:
+                user_id = await self.get_walker_user_id(self.room_name)
 
             success, msg = await self.save_location(user_id, self.room_name, lat, lon)
             if not success:
@@ -48,6 +60,7 @@ class LocationChannel(AsyncWebsocketConsumer):
             )
 
     async def location_update(self, event):
+        # print(event)
         await self.send_json({
             "event": "location_update",
             "user_id": event["user_id"],
@@ -55,6 +68,10 @@ class LocationChannel(AsyncWebsocketConsumer):
             "longitude": event["longitude"],
         })
     from asgiref.sync import sync_to_async
+    @sync_to_async
+    def get_walker_user_id(self, room_name):
+        room = Room.objects.get(id=room_name)
+        return room.walker.user.id
 
     @sync_to_async
     def save_location(self, user_id, room_name, lat, lon):
@@ -83,6 +100,8 @@ class LocationChannel(AsyncWebsocketConsumer):
 
     async def send_json(self, content):
         await self.send(text_data=json.dumps(content))
+
+
 
 # @database_sync_to_async
 # def get_or_create_room(name):
