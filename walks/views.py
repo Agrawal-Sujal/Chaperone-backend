@@ -3,6 +3,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
 from .models import Room, ScheduledWalks
+from feedback.models import *
 from accounts.models import Walker, Wanderer
 
 @api_view(['GET'])
@@ -19,6 +20,8 @@ def get_room_info(request, room_id):
             "start_location_name": room.start_location_name,
             "start_location_latitude": room.start_location_latitude,
             "start_location_longitude": room.start_location_longitude,
+            "walker_photo_url":room.walker.photo_url,
+            "wanderer_photo_url":room.wanderer.photo_url
         }
         return Response(data, status=status.HTTP_200_OK)
     except Room.DoesNotExist:
@@ -33,8 +36,8 @@ def get_wanderer_scheduled_walks(request):
         wanderer = Wanderer.objects.get(user=request.user)
         walks = ScheduledWalks.objects.filter(wanderer=wanderer, walk_completed=False)
 
-        print(wanderer)
-        print(walks)
+        # print(wanderer)
+        # print(walks)
 
         data = []
         for walk in walks:
@@ -47,6 +50,9 @@ def get_wanderer_scheduled_walks(request):
                 walker_rating = 0
             else : 
                 walker_rating = walk.walker.total_rating / walk.walker.total_wanderer
+            
+            feedback_provided = WalkerFeedback.objects.filter(walker = walk.walker, wanderer = wanderer).first()
+
             data.append({
                 "id": walk.id,
                 "walker_id": walk.walker.user.id,
@@ -59,9 +65,12 @@ def get_wanderer_scheduled_walks(request):
                 "start_location_longitude": walk.start_location_longitude,
                 "walker_name": walk.walker.name,
                 "wanderer_name": walk.wanderer.name,
-                "walker_profile_url":walk.walker.photo_url,
+                "walker_photo_url":walk.walker.photo_url,
+                "wanderer_photo_url": wanderer.photo_url,
                 "wanderer_rating":wanderer_rating,
-                "walker_rating": walker_rating
+                "walker_rating": walker_rating,
+                "feedback_provided": feedback_provided,
+                "payment_id":walk.payment_id
             })
 
         print(data)
@@ -89,6 +98,9 @@ def get_walker_scheduled_walks(request):
                 walker_rating = 0
             else : 
                 walker_rating = walk.walker.total_rating / walk.walker.total_wanderer
+            
+            feedback_provided = WandererFeedback.objects.filter(walker = walker, wanderer = walk.wanderer).first()
+
             data.append({
                 "id": walk.id,
                 "walker_id": walk.walker.user.id,
@@ -101,9 +113,12 @@ def get_walker_scheduled_walks(request):
                 "start_location_longitude": walk.start_location_longitude,
                 "walker_name": walk.walker.name,
                 "wanderer_name": walk.wanderer.name,
-                "walker_profile_url":walk.walker.photo_url,
+                "walker_photo_url":walk.walker.photo_url,
+                "wanderer_photo_url": walk.wanderer.photo_url,
                 "wanderer_rating":wanderer_rating,
-                "walker_rating": walker_rating
+                "walker_rating": walker_rating,
+                "feedback_provided": feedback_provided,
+                "payment_id":walk.payment_id
             })
         return Response(data, status=status.HTTP_200_OK)
     except Walker.DoesNotExist:
@@ -147,6 +162,9 @@ def get_completed_wanderer_walks(request):
                 walker_rating = 0
             else : 
                 walker_rating = walk.walker.total_rating / walk.walker.total_wanderer
+            
+            feedback_provided = WalkerFeedback.objects.filter(walker = walk.walker, wanderer = wanderer).first()
+
             data.append({
                 "id": walk.id,
                 "walker_id": walk.walker.user.id,
@@ -159,9 +177,12 @@ def get_completed_wanderer_walks(request):
                 "start_location_longitude": walk.start_location_longitude,
                 "walker_name": walk.walker.name,
                 "wanderer_name": walk.wanderer.name,
-                "walker_profile_url":walk.walker.photo_url,
+                "walker_photo_url":walk.walker.photo_url,
+                "wanderer_photo_url": wanderer.photo_url,
                 "wanderer_rating":wanderer_rating,
-                "walker_rating": walker_rating
+                "walker_rating": walker_rating,
+                "feedback_provided": feedback_provided,
+                "payment_id":walk.payment_id
             })
         return Response(data, status=status.HTTP_200_OK)
     except Wanderer.DoesNotExist:
@@ -187,6 +208,8 @@ def get_completed_walker_walks(request):
                 walker_rating = 0
             else : 
                 walker_rating = walk.walker.total_rating / walk.walker.total_wanderer
+            feedback_provided = WandererFeedback.objects.filter(walker = walker, wanderer = walk.wanderer).first()
+
             data.append({
                 "id": walk.id,
                 "walker_id": walk.walker.user.id,
@@ -199,9 +222,12 @@ def get_completed_walker_walks(request):
                 "start_location_longitude": walk.start_location_longitude,
                 "walker_name": walk.walker.name,
                 "wanderer_name": walk.wanderer.name,
-                "walker_profile_url":walk.walker.photo_url,
+                "walker_photo_url":walk.walker.photo_url,
+                "wanderer_photo_url": walk.wanderer.photo_url,
                 "wanderer_rating":wanderer_rating,
-                "walker_rating": walker_rating
+                "walker_rating": walker_rating,
+                "feedback_provided": feedback_provided,
+                "payment_id":walk.payment_id
             })
         return Response(data, status=status.HTTP_200_OK)
     except Walker.DoesNotExist:

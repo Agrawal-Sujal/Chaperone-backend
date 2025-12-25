@@ -88,7 +88,8 @@ def google_auth_view(request):
             "is_verified":user.is_verified,
             "is_profile_completed":user.is_profile_completed,
             "name": user.name,
-            "is_walker":user.is_walker
+            "is_walker":user.is_walker,
+            "photo_url":user.photo_url
         }, status=status.HTTP_200_OK)
 
     except ValueError:

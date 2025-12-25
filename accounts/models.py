@@ -42,6 +42,8 @@ class User(AbstractBaseUser, PermissionsMixin):
     is_profile_completed = models.BooleanField(default = False)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
+    photo_url = models.TextField(blank=True, null=True)
+
 
     objects = UserManager()
 
@@ -65,7 +67,7 @@ class Walker(models.Model):
     expiry_date = models.DateField(null=True, blank = True)
     latitude = models.FloatField(null = True, blank = True)
     longitude = models.FloatField(null = True, blank = True)
-    location_name = models.CharField(max_length=200,null = True,blank = True)
+    location_name = models.TextField(null = True,blank = True)
     is_active = models.BooleanField(default= False)
     max_walk_distance = models.FloatField(null = True, blank = True,default= 1.00)
     male = models.BooleanField(null=True, blank= True)
@@ -79,6 +81,7 @@ class Walker(models.Model):
 class Wanderer(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
     name = models.CharField(max_length = 100, null = True, blank = True)
+    photo_url = models.TextField(blank=True, null=True)
     total_rating = models.IntegerField(null=True, blank=True, default = 0)
     total_walker = models.IntegerField(null = True, blank = True, default = 0)
     total_walks = models.IntegerField(default = 0)

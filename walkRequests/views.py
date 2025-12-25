@@ -133,6 +133,9 @@ def get_all_wanderer_requests(request):
 
         data = []
         for r in requests_qs:
+            if r.walker.total_wanderer is not 0:
+                rating = r.walker.total_rating / r.walker.total_wanderer
+            else : rating = 0
             data.append({
                 "id": r.id,
                 "walker_id": r.walker.user.id,
@@ -143,11 +146,12 @@ def get_all_wanderer_requests(request):
                 "date": str(r.date),
                 "location_name": r.location_name,
                 "time": r.time,
+                "walker_rating":rating,
                 "loc_lat": r.loc_lat,
                 "loc_long": r.loc_long,
                 "fees_paid": r.fees_paid,
-                "payment_id": r.payment_id,
                 "created_at": r.created_at.strftime("%Y-%m-%d %H:%M:%S"),
+                "walker_photo_url":r.walker.photo_url
             })
 
         return Response(data, status=status.HTTP_200_OK)
@@ -197,7 +201,8 @@ def get_pending_walker_requests(request):
                 "loc_lat": r.loc_lat,
                 "loc_long": r.loc_long,
                 "created_at": r.created_at.strftime("%Y-%m-%d %H:%M:%S"),
-                "distance": distance
+                "distance": distance,
+                "wanderer_photo_url":r.wanderer.photo_url
             })
 
         return Response(data, status=status.HTTP_200_OK)

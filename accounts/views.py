@@ -237,6 +237,7 @@ def update_user_profile(request):
 
             message = "Walker details saved successfully."
             user.is_walker = is_walker
+            user.photo_url = photo_url
             user.is_profile_completed = True
             user.save()
 
@@ -251,7 +252,8 @@ def update_user_profile(request):
                     "female": female
                 }
             )
-
+            wanderer.photo_url = photo_url
+            wanderer.save()
             preferences.need_mobility_assistance = need_mobility_assistance
             preferences.male = male
             preferences.female = female
@@ -283,6 +285,7 @@ def update_user_profile(request):
 
             message = "Wanderer details saved successfully."
             user.is_walker = is_walker
+            user.photo_url = photo_url
             user.is_profile_completed = True
             user.save()
             
@@ -345,7 +348,8 @@ def get_wanderer_profile(request):
             "female": preferences.female,
             "walking_pace_ids": list(pace),
             "language_ids": list(languages),
-            "charity_ids": list(charities)
+            "charity_ids": list(charities),
+            "photo_url":wanderer.photo_url
         }
         # print(str(data))
         return Response(data, status=status.HTTP_200_OK)
@@ -391,7 +395,8 @@ def get_walker_info(request, walker_id):
             'about': walker.about_yourself,
             'paces': paces,
             'languages': languages,
-            'feedbacks': list(feedbacks)
+            'feedbacks': list(feedbacks),
+            "photo_url" : walker.photo_url
         }
         
         return Response(walker_data, status=status.HTTP_200_OK)
@@ -430,6 +435,7 @@ def get_wanderer_info(request, wanderer_id):
             'rating': round(average_rating, 2),
             'paces': paces,
             'languages': languages,
+            "photo_url":wanderer.photo_url
         }
         
         return Response(wanderer_data, status=status.HTTP_200_OK)
@@ -438,7 +444,8 @@ def get_wanderer_info(request, wanderer_id):
         return Response({"detail": "Wanderer not found"}, status=status.HTTP_404_NOT_FOUND)
     except Exception as e:
         return Response({"detail": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-    
+
+from django.conf import settings
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated,IsWanderer])
@@ -457,6 +464,7 @@ def get_wanderer_summary(request):
             "total_walks": wanderer.total_walks,
             "rating": rating
         }
+        print("API DB:", settings.DATABASES['default']['NAME'])
         return Response(wanderer_summary,status = status.HTTP_200_OK)
     except Exception as e:
         return Response({"detail": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

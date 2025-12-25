@@ -35,7 +35,6 @@ class LocationChannel(AsyncWebsocketConsumer):
 
             self.last_location_update = now
 
-
             user_id = data.get("user_id")
             lat = data["latitude"]
             lon = data["longitude"]

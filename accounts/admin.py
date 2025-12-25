@@ -3,7 +3,7 @@ from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.utils.translation import gettext_lazy as _
 from .models import *
 
-@admin.register(User)
+# @admin.register(User)
 class UserAdmin(BaseUserAdmin):
     model = User
 
@@ -54,6 +54,7 @@ class UserAdmin(BaseUserAdmin):
 
 
 # Register other models normally
+admin.site.register(User)
 admin.site.register(Walker)
 admin.site.register(Wanderer)
 admin.site.register(WandererPreferences)

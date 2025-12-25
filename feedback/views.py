@@ -98,6 +98,7 @@ def get_all_walker_feedback(request, walker_id):
             "wanderer_name": f.wanderer_name,
             "rating": f.rating,
             "feedback": f.feedback,
+            "photo_url": f.wanderer.photo_url
         }
         for f in feedbacks
     ]
@@ -105,7 +106,7 @@ def get_all_walker_feedback(request, walker_id):
 
 
 ## Wanderer feedback
-
+## walker will give feedback to wanderer
 @api_view(['POST'])
 @permission_classes([IsAuthenticated,IsWalker])
 def add_wanderer_feedback(request):
@@ -183,7 +184,8 @@ def get_all_wanderer_feedback(request, wanderer_id):
         {
             "id": f.id,
             "walker_name": f.walker_name,
-            "rating": f.rating
+            "rating": f.rating,
+            "photo_url":f.walker.photo_url
         }
         for f in feedbacks
     ]

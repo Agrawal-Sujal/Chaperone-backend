@@ -34,6 +34,8 @@ class ScheduledWalks(models.Model):
     start_location_name = models.CharField(max_length=300)
     start_location_latitude = models.FloatField()
     start_location_longitude = models.FloatField()
+    payment_id = models.BigIntegerField(blank=True, null=True)
+
 
 
 
