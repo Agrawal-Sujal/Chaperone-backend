@@ -21,7 +21,8 @@ def get_room_info(request, room_id):
             "start_location_latitude": room.start_location_latitude,
             "start_location_longitude": room.start_location_longitude,
             "walker_photo_url":room.walker.photo_url,
-            "wanderer_photo_url":room.wanderer.photo_url
+            "wanderer_photo_url":room.wanderer.photo_url,
+            "completed":room.completed
         }
         return Response(data, status=status.HTTP_200_OK)
     except Room.DoesNotExist:
@@ -129,16 +130,16 @@ def get_walker_scheduled_walks(request):
 from asgiref.sync import async_to_sync
 from fcm.send_notification import sendNotifications
 
-# @api_view(['POST'])
-# @permission_classes([IsAuthenticated])
-def complete_walk(room_id):
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def complete_walk(request, room_id):
     try:
         walk = ScheduledWalks.objects.get(room__id=room_id)
 
         if walk.walk_completed:
             return Response(
-                {"detail": "Walk already completed"},
-                status=status.HTTP_400_BAD_REQUEST
+                {"message": "Walk marked as completed"},
+                status=status.HTTP_200_OK
             )
 
         walk.walk_completed = True
@@ -147,9 +148,13 @@ def complete_walk(room_id):
         walk.walker.total_walks += 1
         walk.wanderer.total_walks += 1
 
+        walk.room.completed = True
+        walk.room.save()
         walk.walker.save()
         walk.wanderer.save()
         walk.save()
+
+
 
         # 🔔 Notify Wanderer
         async_to_sync(sendNotifications)(
@@ -171,24 +176,22 @@ def complete_walk(room_id):
                 f"with {walk.wanderer.user.name}. Great job!"
             )
         )
-        return True
-        # return Response(
-        #     {"message": "Walk marked as completed"},
-        #     status=status.HTTP_200_OK
-        # )
+
+        return Response(
+            {"message": "Walk marked as completed"},
+            status=status.HTTP_200_OK
+        )
 
     except ScheduledWalks.DoesNotExist:
-        return False
-        # return Response(
-        #     {"detail": "Scheduled walk not found"},
-        #     status=status.HTTP_404_NOT_FOUND
-        # )
+        return Response(
+            {"detail": "Scheduled walk not found"},
+            status=status.HTTP_404_NOT_FOUND
+        )
     except Exception as e:
-        return False
-        # return Response(
-        #     {"detail": str(e)},
-        #     status=status.HTTP_500_INTERNAL_SERVER_ERROR
-        # )
+        return Response(
+            {"detail": str(e)},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
 
 
 @api_view(['GET'])

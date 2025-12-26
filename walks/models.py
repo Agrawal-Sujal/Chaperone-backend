@@ -7,7 +7,7 @@ class Room(models.Model):
     start_location_name = models.CharField(max_length=300)
     start_location_latitude = models.FloatField()
     start_location_longitude = models.FloatField()
-
+    completed = models.BooleanField(default=False)
 
     def __str__(self):
         return str(self.id)

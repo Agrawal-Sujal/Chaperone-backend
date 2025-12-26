@@ -1,9 +1,11 @@
 from channels.generic.websocket import AsyncWebsocketConsumer
 import json
-from .models import Room, LiveLocation
+from .models import Room, LiveLocation, ScheduledWalks
 from accounts.models import *
 from channels.db import database_sync_to_async
 import time
+from asgiref.sync import async_to_sync
+from fcm.send_notification import sendNotifications
 
 class LocationChannel(AsyncWebsocketConsumer):
 
@@ -12,7 +14,6 @@ class LocationChannel(AsyncWebsocketConsumer):
     
         self.room_name = self.scope['url_route']['kwargs']['room_name']
         self.room_group_name = f"location_{self.room_name}"
-        
         await self.channel_layer.group_add(self.room_group_name, self.channel_name)
         await self.accept()
 
@@ -32,17 +33,13 @@ class LocationChannel(AsyncWebsocketConsumer):
             user_id = data.get("user_id")
             lat = data["latitude"]
             lon = data["longitude"]
+            
 
             if not user_id:
-                await self.send_json({"error": "User Id not found"})
+                await self.send_json({"error": "User not found"})
                 return
 
-            success, msg = await self.save_location(user_id, self.room_name, lat, lon)
-            if not success:
-                await self.send_json({"error": msg})
-                return
-
-            # Broadcast location to everyone in the same room
+           
             await self.channel_layer.group_send(
                 self.room_group_name,
                 {
@@ -52,47 +49,115 @@ class LocationChannel(AsyncWebsocketConsumer):
                     "longitude": lon,
                 }
             )
+            
+        elif action == "status_update":
+
+            user_id = data.get("user_id")
+            location_sharing = data["location_sharing"]
+            request_complete = data["request_complete"]
+            accept_complete_walk = data["accept_complete_walk"]
+            reject_complete_walk = data["reject_complete_walk"]
+            room_id = data["room_id"]
+
+            if not user_id:
+                await self.send_json({"error": "User not found"})
+                return
+            
+            await self.channel_layer.group_send(
+                self.room_group_name,
+                {
+                    "type": "status_update",
+                    "user_id": user_id,
+                    "location_sharing":location_sharing,
+                    "request_complete":request_complete,
+                    "reject_complete_walk":reject_complete_walk
+                }
+            )
+
+            if accept_complete_walk:
+                completed = await complete_walk(room_id)
+
+                if completed:
+                    await self.channel_layer.group_send(
+                        self.room_group_name,
+                        {
+                            "type": "walk_completed"
+                        }
+                    )
+
 
     async def location_update(self, event):
-        # print(event)
+        print(event)
         await self.send_json({
             "event": "location_update",
             "user_id": event["user_id"],
             "latitude": event["latitude"],
             "longitude": event["longitude"],
         })
-    from asgiref.sync import sync_to_async
+        return True
 
-    @sync_to_async
-    def save_location(self, user_id, room_name, lat, lon):
-        
-
-        user = User.objects.get(id=user_id)
-        room = Room.objects.get(id=room_name)
-
-        # print(user_id)
-        if user.is_walker:
-            if room.walker.user != user:
-                return False,"Room already full"
-        else :
-            if room.wanderer.user != user:
-                return False,"Room already full"
-            
-        loc,_ = LiveLocation.objects.get_or_create(room=room,user = user)
-
-        
-        loc.longitude = lon
-        loc.latitude = lat
-
-        loc.save()
-
-        return True, "Location saved."
+    async def status_update(self, event):
+        print(event)
+        await self.send_json({
+            "event": "status_update",
+            "user_id": event["user_id"],
+            "location_sharing":event["location_sharing"],
+            "request_complete": event["request_complete"],
+            "reject_complete_walk": event["reject_complete_walk"]
+        })
+        return True
+    
+    async def walk_completed(self,event):
+        await self.send_json({
+            "event":"walk_completed"
+        })
 
     async def send_json(self, content):
         await self.send(text_data=json.dumps(content))
 
+@database_sync_to_async
+def complete_walk(room_id):
+    try:
+        walk = ScheduledWalks.objects.get(room__id=room_id)
 
+        if walk.walk_completed:
+            return True
 
-# @database_sync_to_async
-# def get_or_create_room(name):
-#     return Room.objects.get_or_create(name=name)
+        walk.walk_completed = True
+
+        # Update stats
+        walk.walker.total_walks += 1
+        walk.wanderer.total_walks += 1
+        walk.room.completed = True
+        walk.room.save()
+        walk.walker.save()
+        walk.wanderer.save()
+        walk.save()
+
+        # 🔔 Notify Wanderer
+        async_to_sync(sendNotifications)(
+            user_id=walk.wanderer.user.id,
+            title="Walk Completed 🎉",
+            body=(
+                f"Your walk with {walk.walker.user.name} "
+                "has been successfully completed. "
+                "You can now rate your walker."
+            )
+        )
+
+        # 🔔 Notify Walker
+        async_to_sync(sendNotifications)(
+            user_id=walk.walker.user.id,
+            title="Walk Completed ✅",
+            body=(
+                f"You have successfully completed the walk "
+                f"with {walk.wanderer.user.name}. Great job!"
+            )
+        )
+        return True
+
+    except ScheduledWalks.DoesNotExist:
+        return False
+        
+    except Exception as e:
+        return False
