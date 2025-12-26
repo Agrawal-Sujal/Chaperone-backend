@@ -5,6 +5,8 @@ from rest_framework import status
 from accounts.models import Walker, Wanderer
 from .models import *
 from accounts_auth.permissions import *
+from fcm.send_notification import *
+from asgiref.sync import async_to_sync
 
 
 @api_view(['POST'])
@@ -61,7 +63,18 @@ def add_walker_feedback(request):
         walker.total_wanderer += 1  # increase count only for new feedback
 
     walker.save()
+    title = "New Feedback Received"
 
+    body = (
+        f"{wanderer.user.name} rated you {rating}⭐"
+        + (" and left feedback." if feedback else ".")
+    )
+
+    async_to_sync(sendNotifications)(
+        user_id=walker.user.id,  
+        title=title,
+        body=body
+    )
 
     return Response({
         "message": "Feedback submitted successfully"
@@ -117,7 +130,7 @@ def add_wanderer_feedback(request):
 
     wanderer_id = request.data.get("wanderer_id")
     rating = request.data.get("rating")
-
+    feedback = request.data.get("feedback")
     if not wanderer_id or not rating:
         return Response({"detail": "wanderer_id and rating are required"}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -151,6 +164,18 @@ def add_wanderer_feedback(request):
     wanderer.total_rating = new_total_rating
     wanderer.total_walker = new_total_walker
     wanderer.save()
+    title = "New Feedback Received"
+
+    body = (
+        f"{walker.user.name} rated you {rating}⭐"
+        + (" and left feedback." if feedback else ".")
+    )
+
+    async_to_sync(sendNotifications)(
+        user_id=walker.user.id,  
+        title=title,
+        body=body
+    )
     return Response({
         "message": "Feedback submitted successfully"
     }, status=status.HTTP_201_CREATED)

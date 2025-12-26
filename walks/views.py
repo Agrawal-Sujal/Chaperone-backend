@@ -126,23 +126,70 @@ def get_walker_scheduled_walks(request):
     except Exception as e:
         return Response({"detail": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-@api_view(['POST'])
-@permission_classes([IsAuthenticated])
-def complete_walk(request, room_id):
+from asgiref.sync import async_to_sync
+from fcm.send_notification import sendNotifications
+
+# @api_view(['POST'])
+# @permission_classes([IsAuthenticated])
+def complete_walk(room_id):
     try:
         walk = ScheduledWalks.objects.get(room__id=room_id)
+
+        if walk.walk_completed:
+            return Response(
+                {"detail": "Walk already completed"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
         walk.walk_completed = True
-        walk.walker.total_walks +=1
-        walk.wanderer.total_walks +=1
-        walk.wanderer.save()
+
+        # Update stats
+        walk.walker.total_walks += 1
+        walk.wanderer.total_walks += 1
+
         walk.walker.save()
-        
+        walk.wanderer.save()
         walk.save()
-        return Response({"message": "Walk marked as completed"}, status=status.HTTP_200_OK)
+
+        # 🔔 Notify Wanderer
+        async_to_sync(sendNotifications)(
+            user_id=walk.wanderer.user.id,
+            title="Walk Completed 🎉",
+            body=(
+                f"Your walk with {walk.walker.user.name} "
+                "has been successfully completed. "
+                "You can now rate your walker."
+            )
+        )
+
+        # 🔔 Notify Walker
+        async_to_sync(sendNotifications)(
+            user_id=walk.walker.user.id,
+            title="Walk Completed ✅",
+            body=(
+                f"You have successfully completed the walk "
+                f"with {walk.wanderer.user.name}. Great job!"
+            )
+        )
+        return True
+        # return Response(
+        #     {"message": "Walk marked as completed"},
+        #     status=status.HTTP_200_OK
+        # )
+
     except ScheduledWalks.DoesNotExist:
-        return Response({"detail": "Scheduled walk not found"}, status=status.HTTP_404_NOT_FOUND)
+        return False
+        # return Response(
+        #     {"detail": "Scheduled walk not found"},
+        #     status=status.HTTP_404_NOT_FOUND
+        # )
     except Exception as e:
-        return Response({"detail": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return False
+        # return Response(
+        #     {"detail": str(e)},
+        #     status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        # )
+
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])

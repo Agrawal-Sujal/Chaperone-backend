@@ -45,7 +45,8 @@ INSTALLED_APPS = [
     'payments',
     'search',
     'walkRequests',
-    'walks'
+    'walks',
+    'fcm'
 ]
 
 ASGI_APPLICATION = 'chaperone.asgi.application'

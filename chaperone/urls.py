@@ -25,5 +25,6 @@ urlpatterns = [
     path('api/search/',include('search.urls')),
     path('api/request/',include('walkRequests.urls')),
     path('api/payments/',include('payments.urls')),
-    path('api/walks/',include("walks.urls"))
+    path('api/walks/',include("walks.urls")),
+    path('api/fcm/',include('fcm.urls'))
 ]

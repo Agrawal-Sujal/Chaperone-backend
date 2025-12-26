@@ -5,6 +5,8 @@ from rest_framework import status
 from .models import Request
 from accounts.models import Wanderer, Walker
 from accounts_auth.permissions import *
+from asgiref.sync import async_to_sync
+from fcm.send_notification import sendNotifications
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated,IsWanderer])
@@ -30,6 +32,15 @@ def send_request(request):
             loc_lat=request.data.get("loc_lat"),
             loc_long=request.data.get("loc_long"),
             location_name = request.data.get("location_name")
+        )
+
+        async_to_sync(sendNotifications)(
+            user_id=req.walker.user.id,
+            title="New Walk Request",
+            body=(
+                f"{wanderer.user.name} has sent you a walk request "
+                f"for {req.date} at {req.time}."
+            )
         )
 
         
@@ -59,6 +70,15 @@ def reject_request(request):
         req.is_rejected = True
         req.rejection_reason = request.data.get("rejection_reason", "")
         req.save()
+        async_to_sync(sendNotifications)(
+            user_id=req.wanderer.user.id,
+            title="Request Rejected",
+            body=(
+                f"{walker.user.name} has rejected your walk request."
+                + (f" Reason: {req.rejection_reason}" if req.rejection_reason else "")
+            )
+        )
+
 
         return Response({
             "message": "Request rejected successfully",
@@ -90,6 +110,15 @@ def accept_request(request):
         req.is_accepted = True
         req.save()
 
+        async_to_sync(sendNotifications)(
+            user_id=req.wanderer.user.id,
+            title="Request Accepted",
+            body=(
+                f"{walker.user.name} has accepted your walk request. "
+                "You can proceed with payment."
+            )
+        )
+
         return Response({
             "message": "Request accepted successfully",
             "id": req.id,
@@ -113,6 +142,12 @@ def withdraw_request(request, request_id):
 
         if req.is_accepted:
             return Response({"detail": "Cannot withdraw an accepted request"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        async_to_sync(sendNotifications)(
+            user_id=req.walker.user.id,
+            title="Request Withdrawn",
+            body=f"{wanderer.user.name} has withdrawn the walk request."
+        )
 
         req.delete()
         return Response({"message": "Request withdrawn successfully"})

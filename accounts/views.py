@@ -7,6 +7,8 @@ from accounts_auth.permissions import *
 from django.utils import timezone
 from datetime import timedelta
 from feedback.models import *
+from fcm.send_notification import *
+from asgiref.sync import async_to_sync
 
 @api_view(['PUT', 'PATCH'])
 @permission_classes([IsAuthenticated])
@@ -464,7 +466,9 @@ def get_wanderer_summary(request):
             "total_walks": wanderer.total_walks,
             "rating": rating
         }
-        print("API DB:", settings.DATABASES['default']['NAME'])
+        # print("User id " + str(user.id) )
+        # async_to_sync(sendNotifications)(user.id,"Test Notification","Testing")
+        # print("API DB:", settings.DATABASES['default']['NAME'])
         return Response(wanderer_summary,status = status.HTTP_200_OK)
     except Exception as e:
         return Response({"detail": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

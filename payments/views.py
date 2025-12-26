@@ -9,6 +9,9 @@ import hmac
 import hashlib
 from walkRequests.models import *
 from walks.models import *
+from asgiref.sync import async_to_sync
+from fcm.send_notification import sendNotifications
+
 
 
 
@@ -147,6 +150,27 @@ class VerifyOrderView(APIView):
             request.wanderer.save()
             
             request.save()
+
+            # Walker notification
+            async_to_sync(sendNotifications)(
+                user_id=request.walker.user.id,
+                title="New Walk Booked",
+                body=(
+                    f"Your walk with {request.wanderer.user.name} "
+                    "has been confirmed. Payment received successfully."
+                )
+            )
+
+            # Wanderer notification
+            async_to_sync(sendNotifications)(
+                user_id=request.wanderer.user.id,
+                title="Payment Successful",
+                body=(
+                    f"Your walk with {request.walker.user.name} "
+                    "is confirmed. We'll see you at the scheduled time!"
+                )
+            )
+
 
             return Response({"status": "Payment verified successfully"}, status=status.HTTP_200_OK)
 
