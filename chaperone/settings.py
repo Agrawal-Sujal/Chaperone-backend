@@ -15,7 +15,8 @@ from pathlib import Path
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
+STATIC_URL = '/static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
@@ -25,7 +26,8 @@ SECRET_KEY = 'django-insecure-0fpgq&4n^=59+xvf_m2v6gj!qmqj9z_ox=^_xw7ifjeeswsn=r
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ['0.0.0.0','10.44.155.82','10.98.31.82','193.181.211.55','10.219.10.82','10.141.67.82']
+ALLOWED_HOSTS = ['0.0.0.0','10.44.155.82','10.98.31.82','193.181.211.55','10.219.10.82','10.141.67.82','.onrender.com',"localhost",
+    "127.0.0.1",]
 
 
 # Application definition
@@ -51,12 +53,19 @@ INSTALLED_APPS = [
 
 ASGI_APPLICATION = 'chaperone.asgi.application'
 
+# CHANNEL_LAYERS = {
+#     "default": {
+#         "BACKEND": "channels_redis.core.RedisChannelLayer",
+#         "CONFIG": {"hosts": [("127.0.0.1", 6379)]},
+#     },
+# }
+
 CHANNEL_LAYERS = {
     "default": {
-        "BACKEND": "channels_redis.core.RedisChannelLayer",
-        "CONFIG": {"hosts": [("127.0.0.1", 6379)]},
-    },
+        "BACKEND": "channels.layers.InMemoryChannelLayer",
+    }
 }
+
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -66,6 +75,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    "whitenoise.middleware.WhiteNoiseMiddleware",
 ]
 
 ROOT_URLCONF = 'chaperone.urls'
