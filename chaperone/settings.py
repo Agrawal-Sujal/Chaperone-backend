@@ -29,9 +29,12 @@ SECRET_KEY = 'django-insecure-0fpgq&4n^=59+xvf_m2v6gj!qmqj9z_ox=^_xw7ifjeeswsn=r
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
+STATICFILES_DIRS = [
+    BASE_DIR / 'static',
+]
 
 # if not DEBUG:
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+# STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 # STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
@@ -58,7 +61,8 @@ INSTALLED_APPS = [
     'walkRequests',
     'walks',
     'fcm',
-    'channels'
+    'channels',
+    'whitenoise.runserver_nostatic'
     # 'django.contrib.sites'
 ]
 
@@ -120,8 +124,8 @@ WSGI_APPLICATION = 'chaperone.wsgi.application'
 # }
 
 
-if os.environ.get("DB_USER"):
-    DATABASES = {
+# if os.environ.get("DB_USER"):
+DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
             'NAME': 'chaperone',
@@ -131,13 +135,13 @@ if os.environ.get("DB_USER"):
             'PORT': '5432',
         }
     }
-else:
-    DATABASES = {
-        "default": {
-            "ENGINE": "django.db.backends.sqlite3",
-            "NAME": BASE_DIR / "db.sqlite3",
-        }
-    }
+# else:
+#     DATABASES = {
+#         "default": {
+#             "ENGINE": "django.db.backends.sqlite3",
+#             "NAME": BASE_DIR / "db.sqlite3",
+#         }
+#     }
 
 
 # import os
