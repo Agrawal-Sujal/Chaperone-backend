@@ -42,23 +42,24 @@ if not firebase_admin._apps:
 
 async def sendNotifications(user_id, title, body):
     try:
-        fcm_tokens = await sync_to_async(
-            list
-        )(FCMToken.objects.filter(user_id=user_id))
+        # ✅ Fetch ONLY unique tokens
+        tokens = await sync_to_async(list)(
+            FCMToken.objects
+            .filter(user_id=user_id)
+            .values_list('token', flat=True)
+            .distinct()
+        )
 
-        tokens = [t.token for t in fcm_tokens]
-        
         if not tokens:
-            return False
+            return True
 
         message = messaging.MulticastMessage(
             data={
                 "title": title,
                 "body": body,
             },
-            tokens=tokens,
+            tokens=list(tokens),  # ensure list
         )
-        print(message)
 
         await sync_to_async(
             messaging.send_each_for_multicast
@@ -67,4 +68,6 @@ async def sendNotifications(user_id, title, body):
         return True
 
     except Exception as e:
+        print("FCM Error:", e)
         return False
+
