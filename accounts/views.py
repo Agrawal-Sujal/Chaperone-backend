@@ -424,6 +424,12 @@ def get_wanderer_info(request, wanderer_id):
         wanderer_language = WandererPreferenceLanguage.objects.filter(wanderer = wanderer_pref).select_related('language')
         languages = [wl.language.name for wl in wanderer_language]
 
+        feedbacks = WandererFeedback.objects.filter(wanderer = wanderer).values(
+            'walker_name', 
+            'rating', 
+            'feedback'
+        )
+
         
         # Calculate average rating
         if wanderer.total_walker > 0:
@@ -437,7 +443,8 @@ def get_wanderer_info(request, wanderer_id):
             'rating': round(average_rating, 2),
             'paces': paces,
             'languages': languages,
-            "photo_url":wanderer.photo_url
+            "photo_url":wanderer.photo_url,
+            'feedbacks': list(feedbacks),
         }
         
         return Response(wanderer_data, status=status.HTTP_200_OK)
