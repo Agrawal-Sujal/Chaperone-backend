@@ -1,4 +1,4 @@
 .env
 firebase-adminsdk.json
-# db.sqlite3
-# __pycache__/
+db.sqlite3
+__pycache__/
