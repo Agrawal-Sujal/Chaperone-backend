@@ -131,7 +131,8 @@ class VerifyOrderView(APIView):
                 time=request.time,
                 start_location_name=request.location_name,
                 start_location_latitude=request.loc_lat,
-                start_location_longitude=request.loc_long
+                start_location_longitude=request.loc_long,
+                payment_id = int(id)
             )
 
              # Update order in DB
