@@ -153,7 +153,8 @@ def add_wanderer_feedback(request):
             walker=walker,
             wanderer=wanderer,
             walker_name=walker.user.name,
-            rating=rating
+            rating=rating,
+            feedback = feedback
         )
 
     new_total_rating = wanderer.total_rating - old_rating + rating
@@ -210,7 +211,8 @@ def get_all_wanderer_feedback(request, wanderer_id):
             "id": f.id,
             "walker_name": f.walker_name,
             "rating": f.rating,
-            "photo_url":f.walker.photo_url
+            "photo_url":f.walker.photo_url,
+            "feedback":f.feedback
         }
         for f in feedbacks
     ]

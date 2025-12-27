@@ -17,6 +17,7 @@ class WandererFeedback(models.Model):
     wanderer = models.ForeignKey(Wanderer, on_delete=models.CASCADE)
     walker_name = models.TextField(blank=True, null=True)
     rating = models.IntegerField()
+    feedback = models.TextField(blank=True, null=True)
 
     def __str__(self):
         return f"Feedback from Walker {self.walker.user.email} to Wanderer {self.wanderer.user.email}"
