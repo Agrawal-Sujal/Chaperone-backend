@@ -52,7 +52,7 @@ def get_wanderer_scheduled_walks(request):
             else : 
                 walker_rating = walk.walker.total_rating / walk.walker.total_wanderer
             
-            feedback_provided = WalkerFeedback.objects.filter(walker = walk.walker, wanderer = wanderer).first()
+            feedback_provided = WalkerFeedback.objects.filter(walker = walk.walker, wanderer = wanderer).exists()
 
             data.append({
                 "id": walk.id,
@@ -100,7 +100,7 @@ def get_walker_scheduled_walks(request):
             else : 
                 walker_rating = walk.walker.total_rating / walk.walker.total_wanderer
             
-            feedback_provided = WandererFeedback.objects.filter(walker = walker, wanderer = walk.wanderer).first()
+            feedback_provided = WandererFeedback.objects.filter(walker = walker, wanderer = walk.wanderer).exists()
 
             data.append({
                 "id": walk.id,
@@ -213,7 +213,7 @@ def get_completed_wanderer_walks(request):
             else : 
                 walker_rating = walk.walker.total_rating / walk.walker.total_wanderer
             
-            feedback_provided = WalkerFeedback.objects.filter(walker = walk.walker, wanderer = wanderer).first()
+            feedback_provided = WalkerFeedback.objects.filter(walker = walk.walker, wanderer = wanderer).exists()
 
             data.append({
                 "id": walk.id,
@@ -258,7 +258,7 @@ def get_completed_walker_walks(request):
                 walker_rating = 0
             else : 
                 walker_rating = walk.walker.total_rating / walk.walker.total_wanderer
-            feedback_provided = WandererFeedback.objects.filter(walker = walker, wanderer = walk.wanderer).first()
+            feedback_provided = WandererFeedback.objects.filter(walker = walker, wanderer = walk.wanderer).exists()
 
             data.append({
                 "id": walk.id,
