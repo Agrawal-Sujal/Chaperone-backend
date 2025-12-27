@@ -134,26 +134,6 @@ def complete_walk(room_id):
         walk.wanderer.save()
         walk.save()
 
-        # 🔔 Notify Wanderer
-        async_to_sync(sendNotifications)(
-            user_id=walk.wanderer.user.id,
-            title="Walk Completed 🎉",
-            body=(
-                f"Your walk with {walk.walker.user.name} "
-                "has been successfully completed. "
-                "You can now rate your walker."
-            )
-        )
-
-        # 🔔 Notify Walker
-        async_to_sync(sendNotifications)(
-            user_id=walk.walker.user.id,
-            title="Walk Completed ✅",
-            body=(
-                f"You have successfully completed the walk "
-                f"with {walk.wanderer.user.name}. Great job!"
-            )
-        )
         return True
 
     except ScheduledWalks.DoesNotExist:
