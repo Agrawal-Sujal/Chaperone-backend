@@ -29,14 +29,14 @@ SECRET_KEY = 'django-insecure-0fpgq&4n^=59+xvf_m2v6gj!qmqj9z_ox=^_xw7ifjeeswsn=r
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
-STATICFILES_DIRS = [
-    BASE_DIR / 'staticfiles',
-]
+# STATICFILES_DIRS = [
+#     BASE_DIR / 'staticfiles',
+# ]
 
 # if not DEBUG:
 # STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
-# STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 
 ALLOWED_HOSTS = ['*']
