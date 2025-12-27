@@ -13,6 +13,9 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 from pathlib import Path
 import dj_database_url
 import os
+from dotenv import load_dotenv
+load_dotenv()
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -27,17 +30,13 @@ SECRET_KEY = 'django-insecure-0fpgq&4n^=59+xvf_m2v6gj!qmqj9z_ox=^_xw7ifjeeswsn=r
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-if not DEBUG:
-    # Tell Django to copy static assets into a path called `staticfiles` (this is specific to Render)
-    STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+# if not DEBUG:
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
-    # Enable the WhiteNoise storage backend, which compresses static files to reduce disk use
-    # and renames the files with unique names for each version to support long-term caching
-    STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+# STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 
-ALLOWED_HOSTS = ['0.0.0.0','10.44.155.82','10.98.31.82','193.181.211.55','10.219.10.82','10.141.67.82','.onrender.com',"localhost",
-    "127.0.0.1",]
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -58,7 +57,8 @@ INSTALLED_APPS = [
     'search',
     'walkRequests',
     'walks',
-    'fcm'
+    'fcm',
+    # 'django.contrib.sites'
 ]
 
 ASGI_APPLICATION = 'chaperone.asgi.application'
@@ -119,13 +119,16 @@ WSGI_APPLICATION = 'chaperone.wsgi.application'
 # }
 
 
-if os.environ.get("DATABASE_URL"):
+if os.environ.get("DB_USER"):
     DATABASES = {
-        "default": dj_database_url.config(
-            default=os.environ["DATABASE_URL"],
-            conn_max_age=600,
-            ssl_require=True,
-        )
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': 'chaperone',
+            'USER': os.environ.get("DB_USER"),
+            'PASSWORD': os.environ.get("DB_PASSWORD"),
+            'HOST': 'chaperone.cvwiqq0w8kt1.ap-south-1.rds.amazonaws.com',
+            'PORT': '5432',
+        }
     }
 else:
     DATABASES = {
@@ -136,9 +139,8 @@ else:
     }
 
 
-import os
-from dotenv import load_dotenv
-load_dotenv()
+# import os
+
 
 # DATABASES = {
 #   "default": {
