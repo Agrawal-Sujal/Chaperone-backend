@@ -9,6 +9,7 @@ from datetime import timedelta
 from feedback.models import *
 from fcm.send_notification import *
 from asgiref.sync import async_to_sync
+from django.db.models import F
 
 @api_view(['PUT', 'PATCH'])
 @permission_classes([IsAuthenticated])
@@ -381,7 +382,8 @@ def get_walker_info(request, walker_id):
         feedbacks = WalkerFeedback.objects.filter(walker=walker).values(
             'wanderer_name', 
             'rating', 
-            'feedback'
+            'feedback',
+            wanderer_photo_url=F('wanderer__photo_url')
         )
         
         # Calculate average rating
@@ -427,7 +429,8 @@ def get_wanderer_info(request, wanderer_id):
         feedbacks = WandererFeedback.objects.filter(wanderer = wanderer).values(
             'walker_name', 
             'rating', 
-            'feedback'
+            'feedback',
+            walker_photo_url = F('walker__photo_url')
         )
 
         

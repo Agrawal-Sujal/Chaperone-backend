@@ -146,6 +146,7 @@ def add_wanderer_feedback(request):
     if repeated_user_feedback:
         old_rating = repeated_user_feedback.rating
         repeated_user_feedback.rating = rating 
+        repeated_user_feedback.feedback = feedback
         repeated_user_feedback.save()
     else :
         new_feedback = True
